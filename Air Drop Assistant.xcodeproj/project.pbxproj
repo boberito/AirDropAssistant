@@ -11,7 +11,6 @@
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
-		736C81022C76933900E5E780 /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C81012C76933900E5E780 /* UpdateCheck.swift */; };
 		73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFA2C70210B00244D57 /* AppDelegate.swift */; };
 		73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFC2C70210B00244D57 /* ViewController.swift */; };
 		73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDCFE2C70210C00244D57 /* Assets.xcassets */; };
@@ -23,7 +22,6 @@
 		736C80F82C70302200E5E780 /* PrefWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefWatcher.swift; sourceTree = "<group>"; };
 		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
-		736C81012C76933900E5E780 /* UpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheck.swift; sourceTree = "<group>"; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73FFDCFA2C70210B00244D57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73FFDCFC2C70210B00244D57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -66,7 +64,6 @@
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
 				736C80F82C70302200E5E780 /* PrefWatcher.swift */,
 				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
-				736C81012C76933900E5E780 /* UpdateCheck.swift */,
 				73FFDCFC2C70210B00244D57 /* ViewController.swift */,
 				73FFDCFE2C70210C00244D57 /* Assets.xcassets */,
 				73FFDD002C70210C00244D57 /* Main.storyboard */,
@@ -152,7 +149,6 @@
 				73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */,
 				73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */,
 				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
-				736C81022C76933900E5E780 /* UpdateCheck.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

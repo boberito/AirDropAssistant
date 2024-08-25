@@ -23,6 +23,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
     
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        NSApplication.shared.setActivationPolicy(.accessory)
+        
         if UserDefaults.standard.string(forKey: "airDropSetting") == nil {
             UserDefaults.standard.set("Contacts Only", forKey: "airDropSetting")
         }
@@ -41,26 +43,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
         let pathToPref = "\(homeDirURL.path)/Library/Preferences/com.apple.sharingd.plist"
         prefWatcher.filePath = pathToPref
         
-        NSApplication.shared.setActivationPolicy(.accessory)
-        adaMenu.menu = NSMenu()
-//        self.adaMenu.button?.title = "ADA"
-        if let fileURLString = Bundle.main.path(forResource: "menuicon", ofType: "png") {
-            let fileExists = FileManager.default.fileExists(atPath: fileURLString)
-            if fileExists {
-                if let button = self.adaMenu.button {
-                    button.image = NSImage(byReferencingFile: fileURLString)
-                }
-            }
+        
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        
+        let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
+        let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
+
+        if hideMenuIconValue && isForced {
+            prefWatcher.startMonitoring()
         } else {
-            self.adaMenu.button?.title = "ADA"
-        }
+            adaMenu.menu = NSMenu()
+            
+            if let fileURLString = Bundle.main.path(forResource: "menuicon", ofType: "png") {
+                let fileExists = FileManager.default.fileExists(atPath: fileURLString)
+                if fileExists {
+                    if let button = self.adaMenu.button {
+                        button.image = NSImage(byReferencingFile: fileURLString)
+                    }
+                }
+            } else {
+                self.adaMenu.button?.title = "ADA"
+            }
+            
         
         adaMenuListing()
         let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
         adaMenu.menu?.insertItem(prefs, at: 1)
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
         adaMenu.menu?.insertItem(quit, at: 2)
-        prefWatcher.startMonitoring()
+            prefWatcher.startMonitoring()
+        }
+        
     }
     
     func adaMenuListing(){
@@ -84,7 +97,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
     }
     @objc func Preferences() {
         for currentWindow in NSApplication.shared.windows {
-            if currentWindow.title.contains("AirDrop Assistant Preferences") {
+            if currentWindow.title.contains("Air Drop Assistant Preferences") {
                 if #available(OSX 14.0, *) {
                     NSApp.activate()
                 } else {
@@ -98,7 +111,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
         let screenSize = NSScreen.main?.frame.size ?? .zero
         let rect = NSMakeRect(screenSize.width/2 - windowSize.width/2, screenSize.height/2 - windowSize.height/2, windowSize.width, windowSize.height)
         window = PreferencesWindow(contentRect: rect, styleMask: [.miniaturizable, .closable, .titled], backing: .buffered, defer: false)
-        window?.title = "Air Drop Assisstant Preferences"
+        window?.title = "Air Drop Assistant Preferences"
         if #available(OSX 14.0, *) {
             NSApp.activate()
         } else {

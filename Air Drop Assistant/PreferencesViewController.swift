@@ -16,7 +16,10 @@ class PreferencesViewController: NSViewController {
         view.wantsLayer = true
         let timelengthButton = NSPopUpButton(frame: NSRect(x: 20, y: 140, width: 150, height: 25), pullsDown: false)
         let prefTime = UserDefaults.standard.string(forKey: "timing")
-        
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        if CFPreferencesAppValueIsForced("timing" as CFString, appBundleID as CFString) {
+            timelengthButton.isEnabled = false
+        }
         timelengthButton.addItem(withTitle: "1 Minute")
         timelengthButton.addItem(withTitle: "5 Minutes")
         timelengthButton.addItem(withTitle: "10 Minutes")
@@ -46,7 +49,9 @@ class PreferencesViewController: NSViewController {
         
         
         let airDropSettingButton = NSPopUpButton(frame: NSRect(x: 200, y: 140, width: 150, height: 25), pullsDown: false)
-        
+        if CFPreferencesAppValueIsForced("timing" as CFString, appBundleID as CFString) {
+            airDropSettingButton.isEnabled = false
+        }
         airDropSettingButton.addItem(withTitle: "Off")
         airDropSettingButton.addItem(withTitle: "Contacts Only")
         airDropSettingButton.selectItem(withTitle: "Contacts Only")
@@ -62,9 +67,6 @@ class PreferencesViewController: NSViewController {
         airDropSettingLabel.isEditable = false
         airDropSettingLabel.drawsBackground = false
         
-        let updateButton = NSButton(title: "Check for Updates", target: Any?.self, action: #selector(updateCheck))
-        updateButton.frame = NSRect(x: 155, y: 50, width: 150, height: 30)
-        
         let infoTextView = NSTextView(frame: NSRect(x: 175, y: 40, width: 300, height: 100))
         infoTextView.textContainerInset = NSSize(width: 10, height: 10)
         infoTextView.isEditable = false
@@ -76,26 +78,14 @@ class PreferencesViewController: NSViewController {
     Version: \(versionText)
 """
     
-//    https://github.com/boberito/sc_menu
-//    """
-            
             let infoAttributedString = NSMutableAttributedString(string: infoString)
 
-            let url = URL(string: "https://github.com/boberito/sc_menu")!
-            let linkRange = (infoString as NSString).range(of: url.absoluteString)
-            infoAttributedString.addAttribute(.link, value: url, range: linkRange)
-            
-            let boldFont = NSFont.boldSystemFont(ofSize: 17)
-            let boldRange = (infoString as NSString).range(of: "SC Menu")
-            infoAttributedString.addAttribute(.font, value: boldFont, range: boldRange)
+        
             let normalFont = NSFont.systemFont(ofSize: 17)
             let normalRange = (infoString as NSString).range(of: infoString)
             infoAttributedString.addAttribute(.font, value: normalFont, range: normalRange)
             if UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark" {
-                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: boldRange)
-                let versionRange = (infoString as NSString).range(of: "Version: \(versionText)")
-                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: versionRange)
-                
+                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: normalRange)  
             }
             infoTextView.textStorage?.setAttributedString(infoAttributedString)
             
@@ -129,29 +119,6 @@ class PreferencesViewController: NSViewController {
         
     }
     
-    @objc func updateCheck(_ sender: NSButton) {
-//        os_log("Update button pressed", log: prefsLog, type: .default)
-        let updater = UpdateCheck()
-        switch updater.check() {
-        case 1:
-            return
-        case 2:
-            let alert = NSAlert()
-            alert.messageText = "Error"
-            alert.informativeText = """
-            Cannot reach GitHub to check SC Menu updates.
-            """
-            alert.runModal()
-        default:
-            let alert = NSAlert()
-            alert.messageText = "No Update Available"
-            alert.informativeText = """
-            SC Menu is currently up to date.
-            """
-            alert.runModal()
-        }
-        
-    }
     
     @objc func timeLengthSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
