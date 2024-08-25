@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7312816B2C7AB4B600D1D88B /* menuicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7312816A2C7AB4B600D1D88B /* menuicon.png */; };
+		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
+		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
+		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
+		736C81022C76933900E5E780 /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C81012C76933900E5E780 /* UpdateCheck.swift */; };
 		73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFA2C70210B00244D57 /* AppDelegate.swift */; };
 		73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFC2C70210B00244D57 /* ViewController.swift */; };
 		73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDCFE2C70210C00244D57 /* Assets.xcassets */; };
@@ -14,6 +19,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7312816A2C7AB4B600D1D88B /* menuicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuicon.png; sourceTree = "<group>"; };
+		736C80F82C70302200E5E780 /* PrefWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefWatcher.swift; sourceTree = "<group>"; };
+		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
+		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
+		736C81012C76933900E5E780 /* UpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheck.swift; sourceTree = "<group>"; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73FFDCFA2C70210B00244D57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73FFDCFC2C70210B00244D57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -52,11 +62,16 @@
 		73FFDCF92C70210B00244D57 /* Air Drop Assistant */ = {
 			isa = PBXGroup;
 			children = (
+				736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */,
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
+				736C80F82C70302200E5E780 /* PrefWatcher.swift */,
+				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
+				736C81012C76933900E5E780 /* UpdateCheck.swift */,
 				73FFDCFC2C70210B00244D57 /* ViewController.swift */,
 				73FFDCFE2C70210C00244D57 /* Assets.xcassets */,
 				73FFDD002C70210C00244D57 /* Main.storyboard */,
 				73FFDD032C70210C00244D57 /* Air_Drop_Assistant.entitlements */,
+				7312816A2C7AB4B600D1D88B /* menuicon.png */,
 			);
 			path = "Air Drop Assistant";
 			sourceTree = "<group>";
@@ -121,6 +136,7 @@
 			files = (
 				73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */,
 				73FFDD022C70210C00244D57 /* Base in Resources */,
+				7312816B2C7AB4B600D1D88B /* menuicon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,8 +147,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */,
+				736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */,
 				73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */,
 				73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */,
+				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
+				736C81022C76933900E5E780 /* UpdateCheck.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +294,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Air Drop Assistant/Air_Drop_Assistant.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -287,9 +309,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bob.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -301,6 +325,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Air Drop Assistant/Air_Drop_Assistant.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -314,9 +340,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bob.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
