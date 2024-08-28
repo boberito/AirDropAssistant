@@ -23,7 +23,7 @@ class PrefWatcher {
     var filePath = ""
     
     func startMonitoring() {
-
+        
         do {
             // Open the file descriptor in event-only mode
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
@@ -50,12 +50,13 @@ class PrefWatcher {
                         print(error)
                     }
                 } else {
-                    //something
+//                    print("something else")
                 }
             }
             
             source?.setCancelHandler {
-//                print("Source canceled")
+//                print("source canceled")
+                self.startMonitoring()
             }
             
             source?.resume()
@@ -80,7 +81,8 @@ class PrefWatcher {
     }
     func resetDiscoverableMode() {
         source?.cancel()
-        let domain = UserDefaults(suiteName: "com.apple.sharingd")        
+        
+        let domain = UserDefaults(suiteName: "com.apple.sharingd")
         if let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") {
             domain?.set(ADASetting, forKey: "DiscoverableMode")
         }

@@ -15,7 +15,7 @@ class PreferencesViewController: NSViewController {
         view = NSView(frame: rect)
         view.wantsLayer = true
         let timelengthButton = NSPopUpButton(frame: NSRect(x: 20, y: 140, width: 150, height: 25), pullsDown: false)
-        let prefTime = UserDefaults.standard.string(forKey: "timing")
+        let prefTime = UserDefaults.standard.integer(forKey: "timing")
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         if CFPreferencesAppValueIsForced("timing" as CFString, appBundleID as CFString) {
             timelengthButton.isEnabled = false
@@ -24,17 +24,18 @@ class PreferencesViewController: NSViewController {
         timelengthButton.addItem(withTitle: "5 Minutes")
         timelengthButton.addItem(withTitle: "10 Minutes")
         timelengthButton.addItem(withTitle: "15 Minutes")
-        if let prefTime = prefTime {
-            if prefTime != "1" || prefTime != "5" || prefTime != "10" || prefTime != "15" {
-                timelengthButton.addItem(withTitle: "\(prefTime) Minutes")
-                
-            }
-            timelengthButton.selectItem(withTitle: "\(prefTime) Minutes")
+
+        if prefTime != 1 && prefTime != 5 && prefTime != 10 && prefTime != 15 {
+            timelengthButton.addItem(withTitle: "\(prefTime) Minutes")
             
-        } else {
-            timelengthButton.selectItem(withTitle: "15 Minutes")
         }
-        
+    
+        if prefTime == 1 {
+            timelengthButton.selectItem(withTitle: "1 Minute")
+        } else {
+            timelengthButton.selectItem(withTitle: "\(prefTime) Minutes")
+        }
+
         timelengthButton.action = #selector(timeLengthSelect)
         
         let timelengthLabel = NSTextField(frame: NSRect(x: 20, y: 160, width: 150, height: 25))
