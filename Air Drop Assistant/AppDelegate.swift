@@ -6,11 +6,13 @@
 //
 
 import Cocoa
+import UserNotifications
 
 @NSApplicationMain
 
+
 class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
-    
+    let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
         
         self.adaMenuListing()
@@ -24,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
-        
+        self.notificationPermissions()
         if UserDefaults.standard.string(forKey: "airDropSetting") == nil {
             UserDefaults.standard.set("Contacts Only", forKey: "airDropSetting")
         }
@@ -72,6 +74,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
         adaMenu.menu?.insertItem(quit, at: 2)
             prefWatcher.startMonitoring()
+        }
+        
+    }
+    
+    func notificationPermissions() {
+        nc.requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
+            if granted {
+                self.prefWatcher.notificationsAllow = true
+               
+            }
         }
         
     }

@@ -7,6 +7,7 @@
 
 import Foundation
 import System
+import UserNotifications
 
 protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
@@ -16,7 +17,7 @@ protocol DataModelDelegate {
 class PrefWatcher {
     
     var delegate: DataModelDelegate?
-    
+    var notificationsAllow = false
     var eventStream: FSEventStreamRef?
     var source: DispatchSourceFileSystemObject?
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
@@ -67,7 +68,7 @@ class PrefWatcher {
     }
     
     func resetAirDrop()  {
-        if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") {
+        if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
             return
          
         } else {
@@ -81,11 +82,12 @@ class PrefWatcher {
     }
     func resetDiscoverableMode() {
         source?.cancel()
-        
+        let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
-        if let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") {
-            domain?.set(ADASetting, forKey: "DiscoverableMode")
-        }
+        guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
+//        if let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") {
+        domain?.set(ADASetting, forKey: "DiscoverableMode")
+//        }
         
         let process = Process()
         process.launchPath = "/usr/bin/killall"
@@ -95,10 +97,24 @@ class PrefWatcher {
         process.standardOutput = outputPipe
         let errorPipe = Pipe()
         process.standardError = errorPipe
-
+        
         process.launch()
         process.waitUntilExit()
-        
+        if notificationsAllow{
+            Task {
+                let settings = await nc.notificationSettings()
+                guard (settings.authorizationStatus == .authorized) ||
+                        (settings.authorizationStatus == .provisional) else
+                { return }
+                let content = UNMutableNotificationContent()
+                content.title = "AirDrop Status Changed"
+                content.body = ADASetting
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+                
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                try await nc.add(request)
+            }
+        }
         self.startMonitoring()
         
         
