@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7312816B2C7AB4B600D1D88B /* menuicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7312816A2C7AB4B600D1D88B /* menuicon.png */; };
+		7328CDA32C87F3C20042A517 /* menuicon_mono.png in Resources */ = {isa = PBXBuildFile; fileRef = 7328CDA22C87F3C20042A517 /* menuicon_mono.png */; };
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		7312816A2C7AB4B600D1D88B /* menuicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuicon.png; sourceTree = "<group>"; };
+		7328CDA22C87F3C20042A517 /* menuicon_mono.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuicon_mono.png; sourceTree = "<group>"; };
 		736C80F82C70302200E5E780 /* PrefWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefWatcher.swift; sourceTree = "<group>"; };
 		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 				73FFDD002C70210C00244D57 /* Main.storyboard */,
 				73FFDD032C70210C00244D57 /* Air_Drop_Assistant.entitlements */,
 				7312816A2C7AB4B600D1D88B /* menuicon.png */,
+				7328CDA22C87F3C20042A517 /* menuicon_mono.png */,
 			);
 			path = "Air Drop Assistant";
 			sourceTree = "<group>";
@@ -133,6 +136,7 @@
 			files = (
 				73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */,
 				73FFDD022C70210C00244D57 /* Base in Resources */,
+				7328CDA32C87F3C20042A517 /* menuicon_mono.png in Resources */,
 				7312816B2C7AB4B600D1D88B /* menuicon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

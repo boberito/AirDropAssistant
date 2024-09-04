@@ -11,22 +11,43 @@ import UserNotifications
 @NSApplicationMain
 
 
-class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate {
     let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
         
         self.adaMenuListing()
+    }
+    
+    func didRecievePrefUpdate(iconMode: String) {
+        
+        var menuIcon = "menuicon"
+        
+        if iconMode == "bw" {
+            menuIcon = "menuicon_mono"
+        }
+//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
+        guard let fileURLString = Bundle.main.path(forResource: menuIcon, ofType: "png") else { return }
+            let fileExists = FileManager.default.fileExists(atPath: fileURLString)
+            if fileExists {
+                if let button = self.adaMenu.button {
+                    button.image = NSImage(byReferencingFile: fileURLString)
+                }
+            }
     }
 
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
     let adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     var airDropStatus = ""
     let prefWatcher = PrefWatcher()
-    
+    let iconPref = UserDefaults.standard.string(forKey: "icon_mode") ?? "colorful"
+    let prefViewController = PreferencesViewController()
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        UNUserNotificationCenter.current().delegate = self
         NSApplication.shared.setActivationPolicy(.accessory)
         self.notificationPermissions()
+        
+        
         if UserDefaults.standard.string(forKey: "airDropSetting") == nil {
             UserDefaults.standard.set("Contacts Only", forKey: "airDropSetting")
         }
@@ -34,8 +55,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
         if UserDefaults.standard.string(forKey: "timing") == nil {
             UserDefaults.standard.set(15, forKey: "timing")
         }
-        
+//        PreferencesViewController.delegate = self
         prefWatcher.delegate = self
+        prefViewController.delegate = self
         
         if domain?.string(forKey: "DiscoverableMode") != UserDefaults.standard.string(forKey: "airDropSetting") && domain?.string(forKey: "DiscoverableMode") != "Off" {
             prefWatcher.resetAirDrop()
@@ -56,7 +78,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
         } else {
             adaMenu.menu = NSMenu()
             
-            if let fileURLString = Bundle.main.path(forResource: "menuicon", ofType: "png") {
+            var menuIcon = "menuicon"
+            
+            if iconPref == "bw" {
+                menuIcon = "menuicon_mono"
+            }
+//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
+            if let fileURLString = Bundle.main.path(forResource: menuIcon, ofType: "png") {
                 let fileExists = FileManager.default.fileExists(atPath: fileURLString)
                 if fileExists {
                     if let button = self.adaMenu.button {
@@ -130,7 +158,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
             NSApp.activate(ignoringOtherApps: true)
         }
         window?.makeKeyAndOrderFront(nil)
-        window?.contentViewController = PreferencesViewController()
+        window?.contentViewController = prefViewController
     }
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
@@ -143,3 +171,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate {
 
 
 
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+           willPresent notification: UNNotification,
+           withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
+    {
+        completionHandler(.banner)
+    }
+    
+}

@@ -8,7 +8,13 @@
 
 import Cocoa
 
+protocol PrefDataModelDelegate {
+    func didRecievePrefUpdate(iconMode: String)
+}
+
 class PreferencesViewController: NSViewController {
+    
+    var delegate: PrefDataModelDelegate?
     
     override func loadView() {
         let rect = NSRect(x: 0, y: 0, width: 415, height: 200)
@@ -68,7 +74,39 @@ class PreferencesViewController: NSViewController {
         airDropSettingLabel.isEditable = false
         airDropSettingLabel.drawsBackground = false
         
-        let infoTextView = NSTextView(frame: NSRect(x: 175, y: 40, width: 300, height: 100))
+        let iconLabel = NSTextField(frame: NSRect(x: 200, y: 110, width: 150, height: 25))
+        iconLabel.stringValue = "Select Menu Icon"
+        iconLabel.isBordered = false
+        iconLabel.isBezeled = false
+        iconLabel.isEditable = false
+        iconLabel.drawsBackground = false
+        
+        let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:86, width: 50, height: 40))
+        colorfulIcon.image = NSImage(named: "menuicon")
+        
+        
+        let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:62, width: 50, height: 40))
+        monochromeIcon.image = NSImage(named: "menuicon_mono")
+        
+        let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
+        iconOneRadioButton.frame = NSRect(x: 200, y: 95, width: 150, height: 25)
+//        iconOneRadioButton.title = "Colorful"
+        iconOneRadioButton.title = "     Colorful"
+        
+        let iconTwoRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
+        iconTwoRadioButton.frame = NSRect(x: 200, y: 70, width: 150, height: 25)
+//        iconTwoRadioButton.title = "Monochrome"
+        iconTwoRadioButton.title = "     Monochrome"
+        if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
+            iconTwoRadioButton.state = .on
+            iconOneRadioButton.state = .off
+        } else {
+            iconOneRadioButton.state = .on
+            iconTwoRadioButton.state = .off
+        }
+        
+        
+        let infoTextView = NSTextView(frame: NSRect(x: 175, y: -25, width: 300, height: 100))
         infoTextView.textContainerInset = NSSize(width: 10, height: 10)
         infoTextView.isEditable = false
         infoTextView.isSelectable = true
@@ -94,6 +132,11 @@ class PreferencesViewController: NSViewController {
         let appIcon = NSImageView(frame:NSRect(x: 10, y:-25, width: 192, height: 192))
         appIcon.image = NSImage(named: "AppIcon")
         
+        view.addSubview(iconLabel)
+        view.addSubview(colorfulIcon)
+        view.addSubview(monochromeIcon)
+        view.addSubview(iconOneRadioButton)
+        view.addSubview(iconTwoRadioButton)
         view.addSubview(appIcon)
         view.addSubview(infoTextView)
 //        view.addSubview(updateButton)
@@ -130,6 +173,20 @@ class PreferencesViewController: NSViewController {
         
     }
     
-    
+    @objc func changeIcon(_ sender: NSButton) {
+        //use UserDefaults
+        
+        if sender.title == "     Monochrome" {
+            UserDefaults.standard.set("bw", forKey: "icon_mode")
+            
+            self.delegate?.didRecievePrefUpdate(iconMode: "bw")
+        }
+        
+        if sender.title == "     Colorful" {
+            UserDefaults.standard.set("colorful", forKey: "icon_mode")
+            self.delegate?.didRecievePrefUpdate(iconMode: "colorful")
+            
+        }
+    }
     
 }
