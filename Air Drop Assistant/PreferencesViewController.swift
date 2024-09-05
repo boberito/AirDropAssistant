@@ -106,29 +106,37 @@ class PreferencesViewController: NSViewController {
         }
         
         
-        let infoTextView = NSTextView(frame: NSRect(x: 175, y: -25, width: 300, height: 100))
-        infoTextView.textContainerInset = NSSize(width: 10, height: 10)
+        let infoTextView = NSTextField(frame: NSRect(x: 183, y: -40, width: 300, height: 100))
+
+        infoTextView.font = NSFont.systemFont(ofSize: 18)
+        infoTextView.isBordered = false
+        infoTextView.isBezeled = false
         infoTextView.isEditable = false
-        infoTextView.isSelectable = true
         infoTextView.drawsBackground = false
+
         if let versionText = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             let infoString = """
     Air Drop Assistant
     Version: \(versionText)
 """
-    
-            let infoAttributedString = NSMutableAttributedString(string: infoString)
-
-        
-            let normalFont = NSFont.systemFont(ofSize: 17)
-            let normalRange = (infoString as NSString).range(of: infoString)
-            infoAttributedString.addAttribute(.font, value: normalFont, range: normalRange)
-            if UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark" {
-                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: normalRange)  
-            }
-            infoTextView.textStorage?.setAttributedString(infoAttributedString)
-            
+            infoTextView.stringValue = infoString
         }
+//            let infoAttributedString = NSMutableAttributedString(string: infoString)
+//            
+//            
+//            let normalFont = NSFont.systemFont(ofSize: 17)
+//            let normalRange = (infoString as NSString).range(of: infoString)
+//            infoAttributedString.addAttribute(.font, value: normalFont, range: normalRange)
+//            
+//            infoAttributedString.addAttribute(.foregroundColor, value: NSColor.black, range: normalRange)
+//            if UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark" {
+//                
+//                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: normalRange)
+//                
+//            }
+//            infoTextView.textStorage?.setAttributedString(infoAttributedString)
+//            
+//        }
         let appIcon = NSImageView(frame:NSRect(x: 10, y:-25, width: 192, height: 192))
         appIcon.image = NSImage(named: "AppIcon")
         

@@ -159,6 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         }
         window?.makeKeyAndOrderFront(nil)
         window?.contentViewController = prefViewController
+//        window?.contentViewController = PreferencesViewController()
     }
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
