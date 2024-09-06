@@ -82,11 +82,20 @@ class PreferencesViewController: NSViewController {
         iconLabel.drawsBackground = false
         
         let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:86, width: 50, height: 40))
-        colorfulIcon.image = NSImage(named: "menuicon")
+        let coloricon = NSImage(named: NSImage.Name("menuicon"))
+        coloricon?.size.width = 18
+        coloricon?.size.height = 18
+        colorfulIcon.image = coloricon
         
         
         let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:62, width: 50, height: 40))
-        monochromeIcon.image = NSImage(named: "menuicon_mono")
+        
+        
+        let monoicon = NSImage(named: NSImage.Name("menuicon_mono"))
+        monoicon?.size.width = 18
+        monoicon?.size.height = 18
+        monochromeIcon.image = monoicon
+        
         
         let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconOneRadioButton.frame = NSRect(x: 200, y: 95, width: 150, height: 25)
@@ -121,22 +130,7 @@ class PreferencesViewController: NSViewController {
 """
             infoTextView.stringValue = infoString
         }
-//            let infoAttributedString = NSMutableAttributedString(string: infoString)
-//            
-//            
-//            let normalFont = NSFont.systemFont(ofSize: 17)
-//            let normalRange = (infoString as NSString).range(of: infoString)
-//            infoAttributedString.addAttribute(.font, value: normalFont, range: normalRange)
-//            
-//            infoAttributedString.addAttribute(.foregroundColor, value: NSColor.black, range: normalRange)
-//            if UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark" {
-//                
-//                infoAttributedString.addAttribute(.foregroundColor, value: NSColor.white, range: normalRange)
-//                
-//            }
-//            infoTextView.textStorage?.setAttributedString(infoAttributedString)
-//            
-//        }
+
         let appIcon = NSImageView(frame:NSRect(x: 10, y:-25, width: 192, height: 192))
         appIcon.image = NSImage(named: "AppIcon")
         

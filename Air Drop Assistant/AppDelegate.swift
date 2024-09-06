@@ -19,27 +19,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     }
     
     func didRecievePrefUpdate(iconMode: String) {
-        
-        var menuIcon = "menuicon"
-        
-        if iconMode == "bw" {
-            menuIcon = "menuicon_mono"
-        }
-//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
-        guard let fileURLString = Bundle.main.path(forResource: menuIcon, ofType: "png") else { return }
-            let fileExists = FileManager.default.fileExists(atPath: fileURLString)
-            if fileExists {
-                if let button = self.adaMenu.button {
-                    button.image = NSImage(byReferencingFile: fileURLString)
-                }
-            }
+        self.menuIcon()
     }
 
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
     let adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     var airDropStatus = ""
     let prefWatcher = PrefWatcher()
-    let iconPref = UserDefaults.standard.string(forKey: "icon_mode") ?? "colorful"
+    
     let prefViewController = PreferencesViewController()
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -55,7 +42,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         if UserDefaults.standard.string(forKey: "timing") == nil {
             UserDefaults.standard.set(15, forKey: "timing")
         }
-//        PreferencesViewController.delegate = self
         prefWatcher.delegate = self
         prefViewController.delegate = self
         
@@ -78,23 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         } else {
             adaMenu.menu = NSMenu()
             
-            var menuIcon = "menuicon"
-            
-            if iconPref == "bw" {
-                menuIcon = "menuicon_mono"
-            }
-//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
-            if let fileURLString = Bundle.main.path(forResource: menuIcon, ofType: "png") {
-                let fileExists = FileManager.default.fileExists(atPath: fileURLString)
-                if fileExists {
-                    if let button = self.adaMenu.button {
-                        button.image = NSImage(byReferencingFile: fileURLString)
-                    }
-                }
-            } else {
-                self.adaMenu.button?.title = "ADA"
-            }
-            
+            self.menuIcon()
         
         adaMenuListing()
         let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
@@ -113,6 +83,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                
             }
         }
+        
+    }
+    func menuIcon(){
+        let iconPref = UserDefaults.standard.string(forKey: "icon_mode") ?? "colorful"
+        var menuIcon = "menuicon"
+        
+        if iconPref == "bw" {
+            menuIcon = "menuicon_mono"
+        }
+//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
+        let icon = NSImage(named: NSImage.Name(menuIcon))
+        icon?.size.width = 18
+        icon?.size.height = 18
+        self.adaMenu.button?.image = icon
         
     }
     
