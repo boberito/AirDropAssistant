@@ -12,6 +12,10 @@ import UserNotifications
 
 
 class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate {
+    func checkAirDrop() {
+        prefWatcher.resetDiscoverableMode()
+    }
+    
     let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
         

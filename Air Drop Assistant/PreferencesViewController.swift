@@ -10,12 +10,15 @@ import Cocoa
 
 protocol PrefDataModelDelegate {
     func didRecievePrefUpdate(iconMode: String)
+    func checkAirDrop()
 }
 
 class PreferencesViewController: NSViewController {
     
     var delegate: PrefDataModelDelegate?
-    
+    override func viewDidDisappear() {
+        delegate?.checkAirDrop()
+    }
     override func loadView() {
         let rect = NSRect(x: 0, y: 0, width: 415, height: 200)
         view = NSView(frame: rect)
