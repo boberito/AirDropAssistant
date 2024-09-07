@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; };
+		7328CDA72C8BA9160042A517 /* com.ttinc.Air-Drop-Assistant.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
@@ -16,10 +18,25 @@
 		73FFDD022C70210C00244D57 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDD012C70210C00244D57 /* Base */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		7328CDA62C8BA8FD0042A517 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Air Drop Assistant.app/Contents/Library/LaunchAgents";
+			dstSubfolderSpec = 16;
+			files = (
+				7328CDA72C8BA9160042A517 /* com.ttinc.Air-Drop-Assistant.plist in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "com.ttinc.Air-Drop-Assistant.plist"; sourceTree = "<group>"; };
 		736C80F82C70302200E5E780 /* PrefWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefWatcher.swift; sourceTree = "<group>"; };
 		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
+		737B8A342C8BE5D1006A4653 /* Air-Drop-Assistant-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Air-Drop-Assistant-Info.plist"; sourceTree = SOURCE_ROOT; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73FFDCFA2C70210B00244D57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73FFDCFC2C70210B00244D57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -58,10 +75,12 @@
 		73FFDCF92C70210B00244D57 /* Air Drop Assistant */ = {
 			isa = PBXGroup;
 			children = (
+				737B8A342C8BE5D1006A4653 /* Air-Drop-Assistant-Info.plist */,
 				736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */,
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
 				736C80F82C70302200E5E780 /* PrefWatcher.swift */,
 				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
+				7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */,
 				73FFDCFC2C70210B00244D57 /* ViewController.swift */,
 				73FFDCFE2C70210C00244D57 /* Assets.xcassets */,
 				73FFDD002C70210C00244D57 /* Main.storyboard */,
@@ -80,6 +99,7 @@
 				73FFDCF32C70210B00244D57 /* Sources */,
 				73FFDCF42C70210B00244D57 /* Frameworks */,
 				73FFDCF52C70210B00244D57 /* Resources */,
+				7328CDA62C8BA8FD0042A517 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -128,6 +148,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */,
 				73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */,
 				73FFDD022C70210C00244D57 /* Base in Resources */,
 			);
@@ -295,6 +316,7 @@
 				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Drop Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -329,6 +351,7 @@
 				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Drop Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

@@ -7,6 +7,8 @@
 
 
 import Cocoa
+import ServiceManagement
+import Foundation
 
 protocol PrefDataModelDelegate {
     func didRecievePrefUpdate(iconMode: String)
@@ -33,18 +35,18 @@ class PreferencesViewController: NSViewController {
         timelengthButton.addItem(withTitle: "5 Minutes")
         timelengthButton.addItem(withTitle: "10 Minutes")
         timelengthButton.addItem(withTitle: "15 Minutes")
-
+        
         if prefTime != 1 && prefTime != 5 && prefTime != 10 && prefTime != 15 {
             timelengthButton.addItem(withTitle: "\(prefTime) Minutes")
             
         }
-    
+        
         if prefTime == 1 {
             timelengthButton.selectItem(withTitle: "1 Minute")
         } else {
             timelengthButton.selectItem(withTitle: "\(prefTime) Minutes")
         }
-
+        
         timelengthButton.action = #selector(timeLengthSelect)
         
         let timelengthLabel = NSTextField(frame: NSRect(x: 20, y: 160, width: 150, height: 25))
@@ -102,12 +104,12 @@ class PreferencesViewController: NSViewController {
         
         let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconOneRadioButton.frame = NSRect(x: 200, y: 95, width: 150, height: 25)
-//        iconOneRadioButton.title = "Colorful"
+        //        iconOneRadioButton.title = "Colorful"
         iconOneRadioButton.title = "     Colorful"
         
         let iconTwoRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconTwoRadioButton.frame = NSRect(x: 200, y: 70, width: 150, height: 25)
-//        iconTwoRadioButton.title = "Monochrome"
+        //        iconTwoRadioButton.title = "Monochrome"
         iconTwoRadioButton.title = "     Monochrome"
         if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
             iconTwoRadioButton.state = .on
@@ -119,13 +121,13 @@ class PreferencesViewController: NSViewController {
         
         
         let infoTextView = NSTextField(frame: NSRect(x: 183, y: -40, width: 300, height: 100))
-
+        
         infoTextView.font = NSFont.systemFont(ofSize: 18)
         infoTextView.isBordered = false
         infoTextView.isBezeled = false
         infoTextView.isEditable = false
         infoTextView.drawsBackground = false
-
+        
         if let versionText = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             let infoString = """
     Air Drop Assistant
@@ -133,8 +135,28 @@ class PreferencesViewController: NSViewController {
 """
             infoTextView.stringValue = infoString
         }
-
-        let appIcon = NSImageView(frame:NSRect(x: 10, y:-25, width: 192, height: 192))
+        
+        let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
+        startUpButton.frame = NSRect(x: 20, y: 115, width: 200, height: 25)
+        let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+        switch appService.status {
+        case .enabled:
+            startUpButton.intValue = 1
+            
+        case .notFound:
+            startUpButton.intValue = 0
+            
+        case .notRegistered:
+            startUpButton.intValue = 0
+            
+        case .requiresApproval:
+            startUpButton.intValue = 0
+            
+        default:
+            startUpButton.intValue = 0
+        }
+        
+        let appIcon = NSImageView(frame:NSRect(x: 40, y:10, width: 100, height: 100))
         appIcon.image = NSImage(named: "AppIcon")
         
         view.addSubview(iconLabel)
@@ -144,21 +166,22 @@ class PreferencesViewController: NSViewController {
         view.addSubview(iconTwoRadioButton)
         view.addSubview(appIcon)
         view.addSubview(infoTextView)
-//        view.addSubview(updateButton)
+        //        view.addSubview(updateButton)
+        view.addSubview(startUpButton)
         view.addSubview(airDropSettingButton)
         view.addSubview(airDropSettingLabel)
         
         self.view = view
-
+        
     }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
-
+    
     override var representedObject: Any? {
         didSet {
-        // Update the view, if already loaded.
+            // Update the view, if already loaded.
         }
     }
     @objc func airDropSelect(_ popUpButton: NSPopUpButton){
@@ -191,6 +214,32 @@ class PreferencesViewController: NSViewController {
             UserDefaults.standard.set("colorful", forKey: "icon_mode")
             self.delegate?.didRecievePrefUpdate(iconMode: "colorful")
             
+        }
+    }
+    
+    @objc func loginItemChange(_ sender: NSButton) {
+        let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+        
+        if sender.intValue == 1 {
+        
+            do {
+                try appService.register()
+                NSLog("registered service")
+            } catch {
+                NSLog("problem registering service")
+            }
+        } else {
+            do {
+                if appService.status == .enabled {
+                    try appService.unregister()
+                    
+                    NSLog("unregistered service")
+                }
+                
+            } catch {
+                
+                NSLog("problem unregistering service")
+            }
         }
     }
     

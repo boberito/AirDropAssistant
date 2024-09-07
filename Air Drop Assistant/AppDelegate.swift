@@ -13,7 +13,11 @@ import UserNotifications
 
 class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate {
     func checkAirDrop() {
-        prefWatcher.resetDiscoverableMode()
+        if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
+            return
+        } else {
+            prefWatcher.resetDiscoverableMode()
+        }
     }
     
     let nc = UNUserNotificationCenter.current()
@@ -34,6 +38,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let prefViewController = PreferencesViewController()
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        
+        let executablePath = Bundle.main.executablePath
+
+        if isAppAlreadyRunning() {
+            NSApp.terminate(nil)
+        }
+
         UNUserNotificationCenter.current().delegate = self
         NSApplication.shared.setActivationPolicy(.accessory)
         self.notificationPermissions()
@@ -96,7 +107,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         if iconPref == "bw" {
             menuIcon = "menuicon_mono"
         }
-//                    if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
         let icon = NSImage(named: NSImage.Name(menuIcon))
         icon?.size.width = 18
         icon?.size.height = 18
@@ -156,6 +166,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
     }
+    func isAppAlreadyRunning() -> Bool {
+         let runningApps = NSWorkspace.shared.runningApplications
+         let isRunning = runningApps.contains { app in
+             return app.bundleIdentifier == Bundle.main.bundleIdentifier && app != NSRunningApplication.current
+         }
+         return isRunning
+     }
 }
 
 
