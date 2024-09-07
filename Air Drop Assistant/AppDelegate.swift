@@ -39,8 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
-        let executablePath = Bundle.main.executablePath
-
+        
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
         }

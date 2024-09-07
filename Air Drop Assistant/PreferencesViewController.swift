@@ -8,7 +8,6 @@
 
 import Cocoa
 import ServiceManagement
-import Foundation
 
 protocol PrefDataModelDelegate {
     func didRecievePrefUpdate(iconMode: String)
@@ -232,7 +231,7 @@ class PreferencesViewController: NSViewController {
             do {
                 if appService.status == .enabled {
                     try appService.unregister()
-                    
+                
                     NSLog("unregistered service")
                 }
                 

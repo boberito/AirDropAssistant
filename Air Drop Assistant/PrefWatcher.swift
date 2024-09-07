@@ -45,6 +45,7 @@ class PrefWatcher {
                         if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
                         }
+                        NSLog("Airdrop Status Changed")
                         self.resetAirDrop()
                     } catch {
                         
@@ -74,13 +75,14 @@ class PrefWatcher {
         } else {
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
-            
+            NSLog("ADA Timer Started")
             DispatchQueue.main.asyncAfter(deadline: .now() + fullTime) {
                 self.resetDiscoverableMode()
             }
         }
     }
     func resetDiscoverableMode() {
+        NSLog("Airdrop Status changed by ADA")
         source?.cancel()
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
