@@ -7,6 +7,7 @@
 
 import Cocoa
 import UserNotifications
+import ServiceManagement
 
 @NSApplicationMain
 
@@ -38,6 +39,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let prefViewController = PreferencesViewController()
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        NSLog("ADA Launched")
+        if CommandLine.arguments.count > 1 {
+            
+            let arguments = CommandLine.arguments
+            let stringarguments = String(describing: arguments)
+            NSLog(stringarguments)
+            let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+            if arguments[1] == "--register" {
+                do {
+                    try appService.register()
+                    NSLog("registered service")
+                } catch {
+                    NSLog("problem registering service")
+                }
+            }
+            
+            if arguments[1] == "--unregister" {
+                do {
+                    if appService.status == .enabled {
+                        try appService.unregister()
+                    
+                        NSLog("unregistered service")
+                    }
+                    
+                } catch {
+                    
+                    NSLog("problem unregistering service")
+                }
+                
+            }
+            NSApp.terminate(nil)
+        }
         
         
         if isAppAlreadyRunning() {

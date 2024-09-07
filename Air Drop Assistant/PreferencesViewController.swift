@@ -231,7 +231,6 @@ class PreferencesViewController: NSViewController {
             do {
                 if appService.status == .enabled {
                     try appService.unregister()
-                
                     NSLog("unregistered service")
                 }
                 
