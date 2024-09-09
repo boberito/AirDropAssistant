@@ -228,6 +228,14 @@ class PreferencesViewController: NSViewController {
                 NSLog("problem registering service")
             }
         } else {
+            
+                let alert = NSAlert()
+                alert.messageText = "Alert"
+                alert.informativeText = """
+            Air Drop Assistant may quit and need reopened when Launch At Login is unselected.
+"""
+                alert.runModal()
+            
             do {
                 if appService.status == .enabled {
                     try appService.unregister()

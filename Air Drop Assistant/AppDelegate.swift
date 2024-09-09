@@ -40,12 +40,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSLog("ADA Launched")
+        let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
             
             let arguments = CommandLine.arguments
             let stringarguments = String(describing: arguments)
             NSLog(stringarguments)
-            let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+            
             if arguments[1] == "--register" {
                 do {
                     try appService.register()
@@ -76,7 +77,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
         }
-
+        NSLog("afterFirstLaunch value is")
+        NSLog(String(UserDefaults.standard.bool(forKey: "afterFirstLaunch")))
+        if UserDefaults.standard.bool(forKey: "afterFirstLaunch") == false && appService.status != .enabled {
+            NSLog("HELLO?")
+            let alert = NSAlert()
+            alert.messageText = "First Launch"
+            alert.informativeText = """
+        Would you like to allow Air Drop Assistant to launch at login?
+"""
+            alert.addButton(withTitle: "Yes")
+            alert.addButton(withTitle: "No")
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                
+                    do {
+                        try appService.register()
+                        NSLog("registered service")
+                    } catch {
+                        NSLog("problem registering service")
+                    }
+            }
+            
+            
+            
+        }
+        UserDefaults.standard.setValue(true, forKey: "afterFirstLaunch")
         UNUserNotificationCenter.current().delegate = self
         NSApplication.shared.setActivationPolicy(.accessory)
         self.notificationPermissions()
@@ -162,6 +188,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         
     }
     
+    @objc func launchAtLogin(){
+        NSLog("launchatlogin function")
+        
+        UserDefaults.standard.setValue(true, forKey: "afterFirstLaunch")
+    }
     @objc func QuitApp() {
         exit(0)
     }
