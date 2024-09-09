@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7318DA972C8F710D004F262A /* UpdateCheck.swift */; };
 		7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; };
 		7328CDA72C8BA9160042A517 /* com.ttinc.Air-Drop-Assistant.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
@@ -32,6 +33,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7318DA972C8F710D004F262A /* UpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheck.swift; sourceTree = "<group>"; };
 		7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "com.ttinc.Air-Drop-Assistant.plist"; sourceTree = "<group>"; };
 		736C80F82C70302200E5E780 /* PrefWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefWatcher.swift; sourceTree = "<group>"; };
 		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 		73FFDCF92C70210B00244D57 /* Air Drop Assistant */ = {
 			isa = PBXGroup;
 			children = (
+				7318DA972C8F710D004F262A /* UpdateCheck.swift */,
 				737B8A342C8BE5D1006A4653 /* Air-Drop-Assistant-Info.plist */,
 				736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */,
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
@@ -166,6 +169,7 @@
 				73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */,
 				73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */,
 				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
+				7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

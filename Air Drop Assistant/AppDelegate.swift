@@ -35,14 +35,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     var airDropStatus = ""
     let prefWatcher = PrefWatcher()
-    
+    let updater = UpdateCheck()
     let prefViewController = PreferencesViewController()
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSLog("ADA Launched")
+        
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
-            
+            if airDropManagedDisabled() {
+                print("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
+                NSApp.terminate(nil)
+            }
             let arguments = CommandLine.arguments
             let stringarguments = String(describing: arguments)
             NSLog(stringarguments)
@@ -73,14 +77,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             NSApp.terminate(nil)
         }
         
-        
+        if airDropManagedDisabled() {
+            let alert = NSAlert()
+            alert.messageText = "Alert"
+            alert.informativeText = """
+AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
+"""
+            alert.runModal()
+            NSApp.terminate(nil)
+        }
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
         }
-        NSLog("afterFirstLaunch value is")
+        
+        _ = updater.check()
         NSLog(String(UserDefaults.standard.bool(forKey: "afterFirstLaunch")))
         if UserDefaults.standard.bool(forKey: "afterFirstLaunch") == false && appService.status != .enabled {
-            NSLog("HELLO?")
+
             let alert = NSAlert()
             alert.messageText = "First Launch"
             alert.informativeText = """
@@ -142,8 +155,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         adaMenuListing()
         let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
         adaMenu.menu?.insertItem(prefs, at: 1)
+        let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+        adaMenu.menu?.insertItem(softwareUpdate, at: 2)
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-        adaMenu.menu?.insertItem(quit, at: 2)
+        adaMenu.menu?.insertItem(quit, at: 3)
             prefWatcher.startMonitoring()
         }
         
@@ -174,7 +189,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     
     func adaMenuListing(){
         if let airDropPref = domain?.object(forKey: "DiscoverableMode") {
-            airDropStatus = String(describing: airDropPref)
+            airDropStatus = "Airdrop Status: " + String(describing: airDropPref)
         } else {
             airDropStatus = "Error reading AirDrop Status"
         }
@@ -236,6 +251,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
          }
          return isRunning
      }
+    @objc func updateCheckFunc () {
+        _ = updater.check()
+    }
+    func airDropManagedDisabled () -> Bool {
+        let networkBrowser = UserDefaults(suiteName: "com.apple.NetworkBrowser")
+        if let networkBrowserAirDrop = networkBrowser?.bool(forKey: "DisableAirDrop") {
+            if networkBrowserAirDrop {
+                NSLog("com.apple.NetworkBrowser DisableAirDrop is set to true")
+                return true
+            }
+        }
+        if let value = UserDefaults.standard.persistentDomain(forName: "com.apple.applicationaccess")?["allowAirDrop"] {
+            if let boolValue = value as? Bool {
+                if !boolValue {
+                    NSLog("com.apple.applicationaccess allowAirDrop is set to false")
+                    return true
+                }
+                
+            }
+        }
+        return false
+    }
 }
 
 
