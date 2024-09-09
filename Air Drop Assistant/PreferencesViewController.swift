@@ -119,9 +119,9 @@ class PreferencesViewController: NSViewController {
         }
         
         
-        let infoTextView = NSTextField(frame: NSRect(x: 183, y: -40, width: 300, height: 100))
+        let infoTextView = NSTextField(frame: NSRect(x: 183, y: -30, width: 300, height: 100))
         
-        infoTextView.font = NSFont.systemFont(ofSize: 18)
+        infoTextView.font = NSFont.systemFont(ofSize: 16)
         infoTextView.isBordered = false
         infoTextView.isBezeled = false
         infoTextView.isEditable = false
@@ -134,6 +134,20 @@ class PreferencesViewController: NSViewController {
 """
             infoTextView.stringValue = infoString
         }
+        
+        let linkTextView = NSTextView(frame: NSRect(x: 130, y: 0, width: 300, height: 25))
+        linkTextView.textContainerInset = NSSize(width: 10, height: 10)
+        linkTextView.isEditable = false
+        linkTextView.isSelectable = true
+        linkTextView.drawsBackground = false
+        let linkString = "https://github.com/boberito/AirDropAssistant"
+        let linkAttributeString = NSMutableAttributedString(string: linkString)
+        let url = URL(string: "https://github.com/boberito/AirDropAssistant")!
+        let linkRange = (linkString as NSString).range(of: url.absoluteString)
+        linkAttributeString.addAttribute(.link, value: url, range: linkRange)
+        let boldFont = NSFont.systemFont(ofSize: 12)
+        linkAttributeString.addAttribute(.font, value: boldFont, range: linkRange)
+        linkTextView.textStorage?.setAttributedString(linkAttributeString)
         
         let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
         startUpButton.frame = NSRect(x: 20, y: 115, width: 200, height: 25)
@@ -165,7 +179,7 @@ class PreferencesViewController: NSViewController {
         view.addSubview(iconTwoRadioButton)
         view.addSubview(appIcon)
         view.addSubview(infoTextView)
-        //        view.addSubview(updateButton)
+        view.addSubview(linkTextView)
         view.addSubview(startUpButton)
         view.addSubview(airDropSettingButton)
         view.addSubview(airDropSettingLabel)
