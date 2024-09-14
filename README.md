@@ -1,4 +1,6 @@
-![icon](icon.png "ada icon")
+<div id="header" align="center">
+  <img src="icon.png"/>
+</div>
 
 Air Drop Assistant (ADA) allows you more control over your Airdrop Settings.
 
@@ -6,23 +8,40 @@ On iOS, when switching AirDrop to Everyone, it switches back to Contacts Only af
 
 ADA allows you to set if AirDrop goes to Contacts Only or Off and the time frame.
 
-![adamenu](adamenu.png "ada menu")
+<div align="center">
+    <img src="adamenu.png" /><img src="adaprefs.png" />
+</div>
 
-![adaprefs](adaprefs.png "ada prefs")
+ADA can be configured by configuration profile.
+Domain **com.ttinc.Air-Drop-Assistant**
 
-```
-domain com.ttinc.Air-Drop-Assistant
-<key>airDropSetting</key>
-<string>Contacts Only/Off</string>
-<key>timing</key>
-<integer>1-100</integer>
-<key>hideMenuIcon</key>
-<true/>/<false/>
-<key>icon_mode</key>
-<string>colorful/bw</string>
-<key>afterFirstLaunch</key>
-<true/>
-```
+`airDropSetting` - **Type: String**
+Acceptable Value: **Contacts Only** or **Off**
+- When set ADA will be locked to switch AirDrop to that settings after the timer.
+
+`timing` - **Type: Integer**
+Acceptable Value: **0-1000**
+- Time length before ADA will switch AirDrop to the value from `airDropSetting`
+
+`hideMenuIcon` - **Type: Boolean**
+Acceptable Value: **true** or **false**
+- Hides the menu bar icon
+
+`icon_mode` - **Type: String**
+Acceptable Value: **colorful** or **bw**
+- Makes the icon colorful or monochrome.
+
+`afterFirstLaunch` - **Type: Boolean**
+Acceptable Value: **true** or **false**
+- Hides the first launch question.
+
+ADA can also be registered to load at login with the argument register and removed from login items as well.
+
+`/Applications/Utilities/Air\ Drop\ Assistant.app/Contents/MacOS/Air\ Drop\ Assistant --register`
+
+and
+
+`/Applications/Utilities/Air\ Drop\ Assistant.app/Contents/MacOS/Air\ Drop\ Assistant --unregister`
 
 Example mobileconfig
 ```
