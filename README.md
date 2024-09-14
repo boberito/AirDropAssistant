@@ -13,7 +13,8 @@ ADA allows you to set if AirDrop goes to Contacts Only or Off and the time frame
 </div>
 
 ADA can be configured by configuration profile.
-Domain **com.ttinc.Air-Drop-Assistant**
+
+**Domain** `com.ttinc.Air-Drop-Assistant`
 
 `airDropSetting` - **Type: String**
 Acceptable Value: **Contacts Only** or **Off**
