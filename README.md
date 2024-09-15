@@ -17,7 +17,7 @@ Why might you want this feature?
     <img src="adamenu.png" /><img src="adaprefs.png" />
 </div>
 
-ADA can be configured by configuration profile.
+ADA can be configured by configuration profile deployed by your MDM.
 
 **Domain** `com.ttinc.Air-Drop-Assistant`
 
