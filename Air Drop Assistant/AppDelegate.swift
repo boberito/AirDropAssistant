@@ -90,8 +90,6 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             NSApp.terminate(nil)
         }
         
-        _ = updater.check()
-        NSLog(String(UserDefaults.standard.bool(forKey: "afterFirstLaunch")))
         if UserDefaults.standard.bool(forKey: "afterFirstLaunch") == false && appService.status != .enabled {
 
             let alert = NSAlert()
@@ -148,6 +146,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         if hideMenuIconValue && isForced {
             prefWatcher.startMonitoring()
         } else {
+            _ = updater.check()
             adaMenu.menu = NSMenu()
             
             self.menuIcon()
