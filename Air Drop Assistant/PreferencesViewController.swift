@@ -117,7 +117,10 @@ class PreferencesViewController: NSViewController {
             iconOneRadioButton.state = .on
             iconTwoRadioButton.state = .off
         }
-        
+        if CFPreferencesAppValueIsForced("icon_mode" as CFString, appBundleID as CFString) {
+            iconOneRadioButton.isEnabled = false
+            iconTwoRadioButton.isEnabled = false
+        }
         
         let infoTextView = NSTextField(frame: NSRect(x: 183, y: -30, width: 300, height: 100))
         
