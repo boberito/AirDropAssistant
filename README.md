@@ -6,9 +6,9 @@ Air Drop Assistant (ADA) gives you more granular control over your AirDrop Setti
 
 On iOS, when switching AirDrop to Everyone, it switches back to Contacts Only after 10 minutes. 
 
-On macOS, AirDrop is either on or off - a setting you have to toggle manually via System Settings > General > AirDrop & Handoff or from the Control Center menu item.
+On macOS, AirDrop is either Off, Contacts Only, or Everyone - a setting you have to toggle manually via System Settings > General > AirDrop & Handoff or from the Control Center menu item.
 
-ADA allows you to set if AirDrop goes to Contacts Only or Off and the time frame to switch it.
+ADA allows you to set, if AirDrop goes to Contacts Only or Off and the time frame to switch it.
 
 Why might you want this feature?
 - You use your computer frequently in public spaces and do not want AirDrop set to be left open to receive from Everyone.
