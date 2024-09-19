@@ -38,9 +38,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let updater = UpdateCheck()
     let prefViewController = PreferencesViewController()
     
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+            // Ensure that the app doesn't show the menu bar or Dock icon when reopened
+        NSApp.setActivationPolicy(.accessory)
+            return false
+    }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSLog("ADA Launched")
-        
+        NSApp.setActivationPolicy(.accessory)
+        if isAppAlreadyRunning() {
+            NSApp.terminate(nil)
+        }
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
             if airDropManagedDisabled() {
@@ -84,9 +92,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
 AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
 """
             alert.runModal()
-            NSApp.terminate(nil)
-        }
-        if isAppAlreadyRunning() {
             NSApp.terminate(nil)
         }
         
