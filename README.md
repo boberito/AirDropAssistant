@@ -2,7 +2,7 @@
   <img src="icon.png"/>
 </div>
 
-Air Drop Assistant (ADA) allows you more control over your Airdrop Settings.
+Air Drop Assistant (ADA) gives you more granular control over your AirDrop Settings than normal MDM controls.
 
 On iOS, when switching AirDrop to Everyone, it switches back to Contacts Only after 10 minutes. 
 
