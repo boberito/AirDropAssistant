@@ -61,9 +61,9 @@ Example mobileconfig
     <array>
         <dict>
             <key>PayloadIdentifier</key>
-            <string>com.bob.Air-Drop-Assistant.26F7424C-FEF3-4E94-8E78-2673B2B8CDD3</string>
+            <string>ccom.ttinc.Air-Drop-Assistant.26F7424C-FEF3-4E94-8E78-2673B2B8CDD3</string>
             <key>PayloadType</key>
-            <string>com.bob.Air-Drop-Assistant</string>
+            <string>com.ttinc.Air-Drop-Assistant</string>
             <key>PayloadUUID</key>
             <string>26F7424C-FEF3-4E94-8E78-2673B2B8CDD3</string>
             <key>PayloadVersion</key>
@@ -85,7 +85,7 @@ Example mobileconfig
     <key>PayloadDisplayName</key>
     <string>ADA</string>
     <key>PayloadIdentifier</key>
-    <string>com.bob.Air-Drop-Assistant</string>
+    <string>com.ttinc.Air-Drop-Assistant</string>
     <key>PayloadOrganization</key>
     <string>BOB</string>
     <key>PayloadScope</key>
