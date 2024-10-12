@@ -24,13 +24,62 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
         
+        self.adaMenu.menu?.removeAllItems()
+        self.adaMenu.menu = NSMenu()
+        
         self.adaMenuListing()
+        let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+        let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+        
+        var IncreaseByOne: Int = 0
+        if let menuItems = adaMenu.menu {
+            for item in menuItems.items {
+                
+                if item.title == "AirDrop: Incoming Only"{
+                    IncreaseByOne += 1
+                }
+                if  item.title == "AirDrop: Outgoing Only" {
+                    IncreaseByOne += 1
+                }
+            }
+        }
+        
+        self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+        self.adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
+        self.adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
     }
-    
+    func updatePF() {
+        
+        self.adaMenu.menu?.removeAllItems()
+        self.adaMenu.menu = NSMenu()
+        
+        self.adaMenuListing()
+        let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+        let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+        
+        var IncreaseByOne: Int = 0
+        if let menuItems = adaMenu.menu {
+            for item in menuItems.items {
+                
+                if item.title == "AirDrop: Incoming Only"{
+                    IncreaseByOne += 1
+                }
+                if  item.title == "AirDrop: Outgoing Only" {
+                    IncreaseByOne += 1
+                }
+            }
+        }
+        
+        self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+        self.adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
+        self.adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+    }
     func didRecievePrefUpdate(iconMode: String) {
         self.menuIcon()
     }
-
+    
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
     let adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     var airDropStatus = ""
@@ -39,9 +88,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let prefViewController = PreferencesViewController()
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-            // Ensure that the app doesn't show the menu bar or Dock icon when reopened
+        // Ensure that the app doesn't show the menu bar or Dock icon when reopened
         NSApp.setActivationPolicy(.accessory)
-            return false
+        return false
     }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSLog("ADA Launched")
@@ -72,7 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 do {
                     if appService.status == .enabled {
                         try appService.unregister()
-                    
+                        
                         NSLog("unregistered service")
                     }
                     
@@ -96,7 +145,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         
         if UserDefaults.standard.bool(forKey: "afterFirstLaunch") == false && appService.status != .enabled {
-
+            
             let alert = NSAlert()
             alert.messageText = "First Launch"
             alert.informativeText = """
@@ -107,12 +156,12 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
                 
-                    do {
-                        try appService.register()
-                        NSLog("registered service")
-                    } catch {
-                        NSLog("problem registering service")
-                    }
+                do {
+                    try appService.register()
+                    NSLog("registered service")
+                } catch {
+                    NSLog("problem registering service")
+                }
             }
             
             
@@ -147,7 +196,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         
         let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
         let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
-
+        
         if hideMenuIconValue && isForced {
             prefWatcher.startMonitoring()
         } else {
@@ -155,14 +204,28 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             adaMenu.menu = NSMenu()
             
             self.menuIcon()
-        
-        adaMenuListing()
-        let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
-        adaMenu.menu?.insertItem(prefs, at: 1)
-        let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
-        adaMenu.menu?.insertItem(softwareUpdate, at: 2)
-        let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-        adaMenu.menu?.insertItem(quit, at: 3)
+            
+            adaMenuListing()
+            let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+            let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+            
+            var IncreaseByOne: Int = 0
+            if let menuItems = adaMenu.menu {
+                for item in menuItems.items {
+                    
+                    if item.title == "AirDrop: Incoming Only"{
+                        IncreaseByOne += 1
+                    }
+                    if  item.title == "AirDrop: Outgoing Only" {
+                        IncreaseByOne += 1
+                    }
+                }
+            }
+            
+            adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+            let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
+            adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
             prefWatcher.startMonitoring()
         }
         
@@ -172,11 +235,12 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         nc.requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             if granted {
                 self.prefWatcher.notificationsAllow = true
-               
+                
             }
         }
         
     }
+    
     func menuIcon(){
         let iconPref = UserDefaults.standard.string(forKey: "icon_mode") ?? "colorful"
         var menuIcon = "menuicon"
@@ -192,6 +256,23 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     
     func adaMenuListing(){
+        
+        var PFADAStatus: String?
+//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        guard let bundleID = Bundle.main.bundleIdentifier else { return }
+        let path = "/Library/Preferences/\(bundleID).plist"
+        
+        if FileManager.default.fileExists(atPath: path) {
+            
+            if let plist = NSDictionary(contentsOfFile: path) as? [String: Any] {
+                
+                if let adaPFValue = plist["ADA_PF"] as? String {
+                    
+                    PFADAStatus = adaPFValue as String
+                    }
+            }
+        }
+            
         if let airDropPref = domain?.object(forKey: "DiscoverableMode") {
             airDropStatus = "Airdrop Status: " + String(describing: airDropPref)
         } else {
@@ -204,6 +285,29 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         
         adaMenu.menu?.insertItem(airDropStatus, at: 0)
+        if (PFADAStatus != "" || PFADAStatus != "off") && airDropStatus.title != "Airdrop Status: Off" {
+            var status = String()
+            if PFADAStatus == "DisableOut" {
+                status = "AirDrop: Incoming Only"
+            }
+            if PFADAStatus == "DisableIn" {
+                status = "AirDrop: Outgoing Only"
+            }
+            if status != "" {
+                if let menuItems = adaMenu.menu {
+                    for item in menuItems.items {
+                        if item.title == "AirDrop: Incoming Only"{
+                            adaMenu.menu?.removeItem(at: 1)
+                        }
+                        if  item.title == "AirDrop: Outgoing Only" {
+                            adaMenu.menu?.removeItem(at: 1)
+                        }
+                    }
+                }
+                adaMenu.menu?.insertItem(NSMenuItem(title: status, action: nil, keyEquivalent: ""), at: 1)
+            }
+        }
+   
         
     }
     
@@ -239,7 +343,6 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         window?.makeKeyAndOrderFront(nil)
         window?.contentViewController = prefViewController
-//        window?.contentViewController = PreferencesViewController()
     }
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
@@ -249,12 +352,12 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         return true
     }
     func isAppAlreadyRunning() -> Bool {
-         let runningApps = NSWorkspace.shared.runningApplications
-         let isRunning = runningApps.contains { app in
-             return app.bundleIdentifier == Bundle.main.bundleIdentifier && app != NSRunningApplication.current
-         }
-         return isRunning
-     }
+        let runningApps = NSWorkspace.shared.runningApplications
+        let isRunning = runningApps.contains { app in
+            return app.bundleIdentifier == Bundle.main.bundleIdentifier && app != NSRunningApplication.current
+        }
+        return isRunning
+    }
     @objc func updateCheckFunc () {
         _ = updater.check()
     }
@@ -284,8 +387,8 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
 extension AppDelegate: UNUserNotificationCenterDelegate {
     
     func userNotificationCenter(_ center: UNUserNotificationCenter,
-           willPresent notification: UNNotification,
-           withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
     {
         completionHandler(.banner)
     }

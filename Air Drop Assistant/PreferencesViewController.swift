@@ -12,6 +12,7 @@ import ServiceManagement
 protocol PrefDataModelDelegate {
     func didRecievePrefUpdate(iconMode: String)
     func checkAirDrop()
+    func updatePF()
 }
 
 class PreferencesViewController: NSViewController {
@@ -21,7 +22,7 @@ class PreferencesViewController: NSViewController {
         delegate?.checkAirDrop()
     }
     override func loadView() {
-        let rect = NSRect(x: 0, y: 0, width: 415, height: 200)
+        let rect = NSRect(x: 0, y: 0, width: 600, height: 200)
         view = NSView(frame: rect)
         view.wantsLayer = true
         let timelengthButton = NSPopUpButton(frame: NSRect(x: 20, y: 140, width: 150, height: 25), pullsDown: false)
@@ -60,7 +61,7 @@ class PreferencesViewController: NSViewController {
         
         
         let airDropSettingButton = NSPopUpButton(frame: NSRect(x: 200, y: 140, width: 150, height: 25), pullsDown: false)
-        if CFPreferencesAppValueIsForced("timing" as CFString, appBundleID as CFString) {
+        if CFPreferencesAppValueIsForced("airDropSetting" as CFString, appBundleID as CFString) {
             airDropSettingButton.isEnabled = false
         }
         airDropSettingButton.addItem(withTitle: "Off")
@@ -122,7 +123,7 @@ class PreferencesViewController: NSViewController {
             iconTwoRadioButton.isEnabled = false
         }
         
-        let infoTextView = NSTextField(frame: NSRect(x: 183, y: -30, width: 300, height: 100))
+        let infoTextView = NSTextField(frame: NSRect(x: 188, y: -40, width: 300, height: 100))
         
         infoTextView.font = NSFont.systemFont(ofSize: 16)
         infoTextView.isBordered = false
@@ -132,13 +133,12 @@ class PreferencesViewController: NSViewController {
         
         if let versionText = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             let infoString = """
-    Air Drop Assistant
-    Version: \(versionText)
+   Air Drop Assistant - Version: \(versionText)
 """
             infoTextView.stringValue = infoString
         }
         
-        let linkTextView = NSTextView(frame: NSRect(x: 130, y: 0, width: 300, height: 25))
+        let linkTextView = NSTextView(frame: NSRect(x: 188, y: 10, width: 300, height: 25))
         linkTextView.textContainerInset = NSSize(width: 10, height: 10)
         linkTextView.isEditable = false
         linkTextView.isSelectable = true
@@ -152,8 +152,36 @@ class PreferencesViewController: NSViewController {
         linkAttributeString.addAttribute(.font, value: boldFont, range: linkRange)
         linkTextView.textStorage?.setAttributedString(linkAttributeString)
         
+        let airDropRestrictButton = NSPopUpButton(frame: NSRect(x: 415, y: 140, width: 150, height: 25), pullsDown: false)
+        //90
+        airDropRestrictButton.addItem(withTitle: "Allow Both Ways")
+        airDropRestrictButton.addItem(withTitle: "Incoming Only")
+        airDropRestrictButton.addItem(withTitle: "Outgoing Only")
+        airDropRestrictButton.selectItem(withTitle: "Allow Both Ways")
+        if let defaultMenuItem = UserDefaults.standard.string(forKey: "ADA_PF") {
+            if defaultMenuItem == "DisableIn" {
+                airDropRestrictButton.selectItem(withTitle: "Outgoing Only")
+            }
+            if defaultMenuItem == "DisableOut" {
+                airDropRestrictButton.selectItem(withTitle: "Incoming Only")
+            }
+            if defaultMenuItem == "off" {
+                airDropRestrictButton.selectItem(withTitle: "Allow Both Ways")
+            }
+            
+        }
+        airDropRestrictButton.action = #selector(pfADA)
+        //110
+        let restrictLabel = NSTextField(frame: NSRect(x: 415, y: 160, width: 150, height: 25))
+        restrictLabel.stringValue = "Restrict AirDrop To:"
+        restrictLabel.isBordered = false
+        restrictLabel.isBezeled = false
+        restrictLabel.isEditable = false
+        restrictLabel.drawsBackground = false
+        
         let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
-        startUpButton.frame = NSRect(x: 20, y: 115, width: 200, height: 25)
+        startUpButton.frame = NSRect(x: 415, y: 110, width: 200, height: 25)
+        //140
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         switch appService.status {
         case .enabled:
@@ -186,6 +214,8 @@ class PreferencesViewController: NSViewController {
         view.addSubview(startUpButton)
         view.addSubview(airDropSettingButton)
         view.addSubview(airDropSettingLabel)
+        view.addSubview(airDropRestrictButton)
+        view.addSubview(restrictLabel)
         
         self.view = view
         
@@ -217,6 +247,63 @@ class PreferencesViewController: NSViewController {
         
     }
     
+    @objc func pfADA(_ popUpButton: NSPopUpButton){
+//        let pfADAPref = UserDefaults.standard.string(forKey: "ADA_PF") ?? ""
+//        let pfADAPref: String? = CFPreferencesCopyAppValue("ADA_PF" as CFString, "com.ttinc.Air-Drop-Assistant" as CFString) as? String
+        var pfADAPref: String?
+//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        guard let bundleID = Bundle.main.bundleIdentifier else { return }
+        let path = "/Library/Preferences/\(bundleID).plist"
+        if FileManager.default.fileExists(atPath: path) {
+            if let plist = NSDictionary(contentsOfFile: path) as? [String: Any] {
+                if let adaPFValue = plist["ADA_PF"] as? String {
+                    pfADAPref = adaPFValue as String
+                    }
+            }
+        }
+        switch popUpButton.titleOfSelectedItem {
+        case "Allow Both Ways":
+            if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
+                runPFScript(argument: "--remove")
+            }
+        case "Incoming Only":
+            if pfADAPref != "DisableOut" {
+                runPFScript(argument: "--blockOut")
+            }
+        case "Outgoing Only":
+            if pfADAPref != "DisableIn" {
+                runPFScript(argument: "--blockIn")
+            }
+        default:
+            NSLog("You crazy you got here")
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.delegate?.updatePF()
+            NSApplication.shared.keyWindow?.close()
+        }
+        
+        
+        
+    }
+    
+    func runPFScript(argument: String) {
+        let resourcesPath = Bundle.main.resourceURL!.appendingPathComponent("ADA_PF_Helper_Script.sh").path
+        NSLog("Script Path: \(resourcesPath)")
+        
+        let task = Process()
+        let pipe = Pipe()
+        
+        task.standardOutput = pipe
+        task.standardError = pipe
+        task.arguments = [resourcesPath, argument]  // Correct argument passing
+        task.launchPath = "/bin/zsh"
+        task.standardInput = nil
+        
+        task.launch()
+        task.waitUntilExit()  // Wait for the task to complete
+        
+    }
+    
     @objc func changeIcon(_ sender: NSButton) {
         //use UserDefaults
         
@@ -237,7 +324,7 @@ class PreferencesViewController: NSViewController {
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         
         if sender.intValue == 1 {
-        
+            
             do {
                 try appService.register()
                 NSLog("registered service")
@@ -246,12 +333,12 @@ class PreferencesViewController: NSViewController {
             }
         } else {
             
-                let alert = NSAlert()
-                alert.messageText = "Alert"
-                alert.informativeText = """
+            let alert = NSAlert()
+            alert.messageText = "Alert"
+            alert.informativeText = """
             Air Drop Assistant may quit and need reopened when Launch At Login is unselected.
 """
-                alert.runModal()
+            alert.runModal()
             
             do {
                 if appService.status == .enabled {
