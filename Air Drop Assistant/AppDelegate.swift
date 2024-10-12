@@ -342,6 +342,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             NSApp.activate(ignoringOtherApps: true)
         }
         window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
         window?.contentViewController = prefViewController
     }
     func applicationWillTerminate(_ aNotification: Notification) {

@@ -17,11 +17,13 @@ protocol PrefDataModelDelegate {
 
 class PreferencesViewController: NSViewController {
     
+    var pfADAPref: String?
     var delegate: PrefDataModelDelegate?
     override func viewDidDisappear() {
         delegate?.checkAirDrop()
     }
     override func loadView() {
+        loadPref()
         let rect = NSRect(x: 0, y: 0, width: 600, height: 200)
         view = NSView(frame: rect)
         view.wantsLayer = true
@@ -86,14 +88,14 @@ class PreferencesViewController: NSViewController {
         iconLabel.isEditable = false
         iconLabel.drawsBackground = false
         
-        let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:86, width: 50, height: 40))
+        let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:80, width: 50, height: 40))
         let coloricon = NSImage(named: NSImage.Name("menuicon"))
         coloricon?.size.width = 18
         coloricon?.size.height = 18
         colorfulIcon.image = coloricon
         
         
-        let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:62, width: 50, height: 40))
+        let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:60, width: 50, height: 40))
         
         
         let monoicon = NSImage(named: NSImage.Name("menuicon_mono"))
@@ -103,12 +105,12 @@ class PreferencesViewController: NSViewController {
         
         
         let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
-        iconOneRadioButton.frame = NSRect(x: 200, y: 95, width: 150, height: 25)
+        iconOneRadioButton.frame = NSRect(x: 200, y: 90, width: 150, height: 25)
         //        iconOneRadioButton.title = "Colorful"
         iconOneRadioButton.title = "     Colorful"
         
         let iconTwoRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
-        iconTwoRadioButton.frame = NSRect(x: 200, y: 70, width: 150, height: 25)
+        iconTwoRadioButton.frame = NSRect(x: 200, y: 65, width: 150, height: 25)
         //        iconTwoRadioButton.title = "Monochrome"
         iconTwoRadioButton.title = "     Monochrome"
         if UserDefaults.standard.string(forKey: "icon_mode") == "bw" {
@@ -123,8 +125,8 @@ class PreferencesViewController: NSViewController {
             iconTwoRadioButton.isEnabled = false
         }
         
-        let infoTextView = NSTextField(frame: NSRect(x: 188, y: -40, width: 300, height: 100))
-        
+//        let infoTextView = NSTextField(frame: NSRect(x: 188, y: -40, width: 300, height: 100))
+        let infoTextView = NSTextField(frame: NSRect(x: 385, y: 30, width: 300, height: 50))
         infoTextView.font = NSFont.systemFont(ofSize: 16)
         infoTextView.isBordered = false
         infoTextView.isBezeled = false
@@ -133,12 +135,13 @@ class PreferencesViewController: NSViewController {
         
         if let versionText = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             let infoString = """
-   Air Drop Assistant - Version: \(versionText)
+   Air Drop Assistant
+          Version: \(versionText)
 """
             infoTextView.stringValue = infoString
         }
         
-        let linkTextView = NSTextView(frame: NSRect(x: 188, y: 10, width: 300, height: 25))
+        let linkTextView = NSTextView(frame: NSRect(x: 320, y: 10, width: 300, height: 25))
         linkTextView.textContainerInset = NSSize(width: 10, height: 10)
         linkTextView.isEditable = false
         linkTextView.isSelectable = true
@@ -151,36 +154,40 @@ class PreferencesViewController: NSViewController {
         let boldFont = NSFont.systemFont(ofSize: 12)
         linkAttributeString.addAttribute(.font, value: boldFont, range: linkRange)
         linkTextView.textStorage?.setAttributedString(linkAttributeString)
-        
-        let airDropRestrictButton = NSPopUpButton(frame: NSRect(x: 415, y: 140, width: 150, height: 25), pullsDown: false)
-        //90
-        airDropRestrictButton.addItem(withTitle: "Allow Both Ways")
-        airDropRestrictButton.addItem(withTitle: "Incoming Only")
-        airDropRestrictButton.addItem(withTitle: "Outgoing Only")
-        airDropRestrictButton.selectItem(withTitle: "Allow Both Ways")
-        if let defaultMenuItem = UserDefaults.standard.string(forKey: "ADA_PF") {
-            if defaultMenuItem == "DisableIn" {
-                airDropRestrictButton.selectItem(withTitle: "Outgoing Only")
-            }
-            if defaultMenuItem == "DisableOut" {
-                airDropRestrictButton.selectItem(withTitle: "Incoming Only")
-            }
-            if defaultMenuItem == "off" {
-                airDropRestrictButton.selectItem(withTitle: "Allow Both Ways")
-            }
-            
-        }
-        airDropRestrictButton.action = #selector(pfADA)
-        //110
-        let restrictLabel = NSTextField(frame: NSRect(x: 415, y: 160, width: 150, height: 25))
+    
+        let restrictLabel = NSTextField(frame: NSRect(x: 20, y: 110, width: 150, height: 25))
         restrictLabel.stringValue = "Restrict AirDrop To:"
         restrictLabel.isBordered = false
         restrictLabel.isBezeled = false
         restrictLabel.isEditable = false
         restrictLabel.drawsBackground = false
         
+        let restrictRadioButtonOne = NSButton(radioButtonWithTitle: "Allow Both Ways", target: Any.self, action: #selector(pfADARadio))
+        restrictRadioButtonOne.frame = NSRect(x: 20, y: 90, width: 150, height: 25)
+        
+        let restrictRadioButtonTwo = NSButton(radioButtonWithTitle: "Incoming Only", target: Any.self, action: #selector(pfADARadio))
+        restrictRadioButtonTwo.frame = NSRect(x: 20, y: 70, width: 150, height: 25)
+        
+        let restrictRadioButtonThree = NSButton(radioButtonWithTitle: "Outgoing Only", target: Any.self, action: #selector(pfADARadio))
+        restrictRadioButtonThree.frame = NSRect(x: 20, y:50, width: 150, height: 25)
+        
+        if pfADAPref == nil || pfADAPref == "off" {
+            restrictRadioButtonOne.state = .on
+            restrictRadioButtonTwo.state = .off
+            restrictRadioButtonThree.state = .off
+        }
+        if pfADAPref == "DisableOut" {
+            restrictRadioButtonOne.state = .off
+            restrictRadioButtonTwo.state = .on
+            restrictRadioButtonThree.state = .off
+        }
+        if pfADAPref == "DisableIn" {
+            restrictRadioButtonOne.state = .off
+            restrictRadioButtonTwo.state = .off
+            restrictRadioButtonThree.state = .on
+        }
         let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
-        startUpButton.frame = NSRect(x: 415, y: 110, width: 200, height: 25)
+        startUpButton.frame = NSRect(x: 20, y: 25, width: 200, height: 25)
         //140
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         switch appService.status {
@@ -200,7 +207,7 @@ class PreferencesViewController: NSViewController {
             startUpButton.intValue = 0
         }
         
-        let appIcon = NSImageView(frame:NSRect(x: 40, y:10, width: 100, height: 100))
+        let appIcon = NSImageView(frame:NSRect(x: 415, y:85, width: 100, height: 100))
         appIcon.image = NSImage(named: "AppIcon")
         
         view.addSubview(iconLabel)
@@ -214,9 +221,11 @@ class PreferencesViewController: NSViewController {
         view.addSubview(startUpButton)
         view.addSubview(airDropSettingButton)
         view.addSubview(airDropSettingLabel)
-        view.addSubview(airDropRestrictButton)
+//        view.addSubview(airDropRestrictButton)
         view.addSubview(restrictLabel)
-        
+        view.addSubview(restrictRadioButtonOne)
+        view.addSubview(restrictRadioButtonTwo)
+        view.addSubview(restrictRadioButtonThree)
         self.view = view
         
     }
@@ -236,7 +245,18 @@ class PreferencesViewController: NSViewController {
         }
         
     }
-    
+    func loadPref() {
+        
+        guard let bundleID = Bundle.main.bundleIdentifier else { return }
+        let path = "/Library/Preferences/\(bundleID).plist"
+        if FileManager.default.fileExists(atPath: path) {
+            if let plist = NSDictionary(contentsOfFile: path) as? [String: Any] {
+                if let adaPFValue = plist["ADA_PF"] as? String {
+                    pfADAPref = adaPFValue as String
+                    }
+            }
+        }
+    }
     
     @objc func timeLengthSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
@@ -247,20 +267,38 @@ class PreferencesViewController: NSViewController {
         
     }
     
-    @objc func pfADA(_ popUpButton: NSPopUpButton){
-//        let pfADAPref = UserDefaults.standard.string(forKey: "ADA_PF") ?? ""
-//        let pfADAPref: String? = CFPreferencesCopyAppValue("ADA_PF" as CFString, "com.ttinc.Air-Drop-Assistant" as CFString) as? String
-        var pfADAPref: String?
-//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
-        guard let bundleID = Bundle.main.bundleIdentifier else { return }
-        let path = "/Library/Preferences/\(bundleID).plist"
-        if FileManager.default.fileExists(atPath: path) {
-            if let plist = NSDictionary(contentsOfFile: path) as? [String: Any] {
-                if let adaPFValue = plist["ADA_PF"] as? String {
-                    pfADAPref = adaPFValue as String
-                    }
+    @objc func pfADARadio(_ sender: NSButton) {
+        switch sender.title {
+        case "Allow Both Ways":
+            if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
+                runPFScript(argument: "--remove")
             }
+        case "Incoming Only":
+            if pfADAPref != "DisableOut" {
+                runPFScript(argument: "--blockOut")
+            }
+        case "Outgoing Only":
+            if pfADAPref != "DisableIn" {
+                runPFScript(argument: "--blockIn")
+            }
+        default:
+            NSLog("You crazy you got here")
         }
+        loadPref()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.delegate?.updatePF()
+        }
+        if #available(OSX 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        self.view.window?.makeKeyAndOrderFront(nil)
+        self.view.window?.orderFrontRegardless()
+    }
+    
+    @objc func pfADA(_ popUpButton: NSPopUpButton){
+        
         switch popUpButton.titleOfSelectedItem {
         case "Allow Both Ways":
             if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
