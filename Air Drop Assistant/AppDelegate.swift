@@ -336,11 +336,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         let rect = NSMakeRect(screenSize.width/2 - windowSize.width/2, screenSize.height/2 - windowSize.height/2, windowSize.width, windowSize.height)
         window = PreferencesWindow(contentRect: rect, styleMask: [.miniaturizable, .closable, .titled], backing: .buffered, defer: false)
         window?.title = "Air Drop Assistant Preferences"
-        if #available(OSX 14.0, *) {
-            NSApp.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
         window?.makeKeyAndOrderFront(nil)
         window?.orderFrontRegardless()
         window?.contentViewController = prefViewController

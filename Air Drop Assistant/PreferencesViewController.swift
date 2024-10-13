@@ -52,7 +52,7 @@ class PreferencesViewController: NSViewController {
         timelengthButton.action = #selector(timeLengthSelect)
         
         let timelengthLabel = NSTextField(frame: NSRect(x: 20, y: 160, width: 150, height: 25))
-        timelengthLabel.stringValue = "Select the Time Length"
+        timelengthLabel.stringValue = "Select Time Length:"
         timelengthLabel.isBordered = false
         timelengthLabel.isBezeled = false
         timelengthLabel.isEditable = false
@@ -75,14 +75,14 @@ class PreferencesViewController: NSViewController {
         airDropSettingButton.action = #selector(airDropSelect)
         
         let airDropSettingLabel = NSTextField(frame: NSRect(x: 200, y: 160, width: 200, height: 25))
-        airDropSettingLabel.stringValue = "Select the Setting to Switch To"
+        airDropSettingLabel.stringValue = "Select Setting:"
         airDropSettingLabel.isBordered = false
         airDropSettingLabel.isBezeled = false
         airDropSettingLabel.isEditable = false
         airDropSettingLabel.drawsBackground = false
         
         let iconLabel = NSTextField(frame: NSRect(x: 200, y: 110, width: 150, height: 25))
-        iconLabel.stringValue = "Select Menu Icon"
+        iconLabel.stringValue = "Select Icon:"
         iconLabel.isBordered = false
         iconLabel.isBezeled = false
         iconLabel.isEditable = false
@@ -156,7 +156,7 @@ class PreferencesViewController: NSViewController {
         linkTextView.textStorage?.setAttributedString(linkAttributeString)
     
         let restrictLabel = NSTextField(frame: NSRect(x: 20, y: 110, width: 150, height: 25))
-        restrictLabel.stringValue = "Restrict AirDrop To:"
+        restrictLabel.stringValue = "Restrict AirDrop:"
         restrictLabel.isBordered = false
         restrictLabel.isBezeled = false
         restrictLabel.isEditable = false
@@ -221,7 +221,6 @@ class PreferencesViewController: NSViewController {
         view.addSubview(startUpButton)
         view.addSubview(airDropSettingButton)
         view.addSubview(airDropSettingLabel)
-//        view.addSubview(airDropRestrictButton)
         view.addSubview(restrictLabel)
         view.addSubview(restrictRadioButtonOne)
         view.addSubview(restrictRadioButtonTwo)
@@ -288,40 +287,10 @@ class PreferencesViewController: NSViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.delegate?.updatePF()
         }
-        if #available(OSX 14.0, *) {
-            NSApp.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+
+        NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
         self.view.window?.makeKeyAndOrderFront(nil)
         self.view.window?.orderFrontRegardless()
-    }
-    
-    @objc func pfADA(_ popUpButton: NSPopUpButton){
-        
-        switch popUpButton.titleOfSelectedItem {
-        case "Allow Both Ways":
-            if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
-                runPFScript(argument: "--remove")
-            }
-        case "Incoming Only":
-            if pfADAPref != "DisableOut" {
-                runPFScript(argument: "--blockOut")
-            }
-        case "Outgoing Only":
-            if pfADAPref != "DisableIn" {
-                runPFScript(argument: "--blockIn")
-            }
-        default:
-            NSLog("You crazy you got here")
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.delegate?.updatePF()
-            NSApplication.shared.keyWindow?.close()
-        }
-        
-        
-        
     }
     
     func runPFScript(argument: String) {
