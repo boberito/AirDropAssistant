@@ -19,7 +19,12 @@ class PreferencesViewController: NSViewController {
     
     var pfADAPref: String?
     var delegate: PrefDataModelDelegate?
+    var currentButton: Int?
+    var previousRadioButton = NSButton()
+    
+    
     override func viewDidDisappear() {
+        NSLog("Preferences Window closed")
         delegate?.checkAirDrop()
     }
     override func loadView() {
@@ -175,16 +180,19 @@ class PreferencesViewController: NSViewController {
             restrictRadioButtonOne.state = .on
             restrictRadioButtonTwo.state = .off
             restrictRadioButtonThree.state = .off
+            previousRadioButton = restrictRadioButtonOne
         }
         if pfADAPref == "DisableOut" {
             restrictRadioButtonOne.state = .off
             restrictRadioButtonTwo.state = .on
             restrictRadioButtonThree.state = .off
+            previousRadioButton = restrictRadioButtonTwo
         }
         if pfADAPref == "DisableIn" {
             restrictRadioButtonOne.state = .off
             restrictRadioButtonTwo.state = .off
             restrictRadioButtonThree.state = .on
+            previousRadioButton = restrictRadioButtonThree
         }
         let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
         startUpButton.frame = NSRect(x: 20, y: 25, width: 200, height: 25)
@@ -265,20 +273,37 @@ class PreferencesViewController: NSViewController {
         }
         
     }
+
     
     @objc func pfADARadio(_ sender: NSButton) {
         switch sender.title {
         case "Allow Both Ways":
             if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
-                runPFScript(argument: "--remove")
+                if !runPFScript(argument: "--remove") {
+                    sender.state = .off
+                    previousRadioButton.state = .on
+                } else {
+                    previousRadioButton = sender
+                }
+                
             }
         case "Incoming Only":
             if pfADAPref != "DisableOut" {
-                runPFScript(argument: "--blockOut")
+                if !runPFScript(argument: "--blockOut") {
+                    sender.state = .off
+                    previousRadioButton.state = .on
+                } else {
+                    previousRadioButton = sender
+                }
             }
         case "Outgoing Only":
             if pfADAPref != "DisableIn" {
-                runPFScript(argument: "--blockIn")
+                if !runPFScript(argument: "--blockIn") {
+                    sender.state = .off
+                    previousRadioButton.state = .on
+                } else {
+                    previousRadioButton = sender
+                }
             }
         default:
             NSLog("You crazy you got here")
@@ -293,7 +318,7 @@ class PreferencesViewController: NSViewController {
         self.view.window?.orderFrontRegardless()
     }
     
-    func runPFScript(argument: String) {
+    func runPFScript(argument: String) -> Bool {
         let resourcesPath = Bundle.main.resourceURL!.appendingPathComponent("ADA_PF_Helper_Script.sh").path
         NSLog("Script Path: \(resourcesPath)")
         
@@ -309,6 +334,12 @@ class PreferencesViewController: NSViewController {
         task.launch()
         task.waitUntilExit()  // Wait for the task to complete
         
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output = String(data: data, encoding: .utf8)!
+        if output.contains("User canceled."){
+            return false
+        }
+        return true
     }
     
     @objc func changeIcon(_ sender: NSButton) {

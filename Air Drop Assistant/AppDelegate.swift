@@ -184,7 +184,9 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         prefViewController.delegate = self
         
         if domain?.string(forKey: "DiscoverableMode") != UserDefaults.standard.string(forKey: "airDropSetting") && domain?.string(forKey: "DiscoverableMode") != "Off" {
-            prefWatcher.resetAirDrop()
+            Task {
+                await prefWatcher.resetAirDrop()
+            }
         }
         
         let homeDirURL = FileManager.default.homeDirectoryForCurrentUser

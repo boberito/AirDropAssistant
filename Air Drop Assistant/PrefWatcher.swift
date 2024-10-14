@@ -46,18 +46,20 @@ class PrefWatcher {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
                         }
                         NSLog("Airdrop Status Changed")
-                        self.resetAirDrop()
+                        Task {
+                            await self.resetAirDrop()
+                        }
                     } catch {
                         
                         print(error)
                     }
                 } else {
-//                    print("something else")
+                    //                    print("something else")
                 }
             }
             
             source?.setCancelHandler {
-//                print("source canceled")
+                //                print("source canceled")
                 self.startMonitoring()
             }
             
@@ -68,15 +70,22 @@ class PrefWatcher {
         }
     }
     
-    func resetAirDrop()  {
+    func resetAirDrop() async {
         if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
             return
-         
+            
         } else {
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
+            NSLog("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
             NSLog("ADA Timer Started")
-            DispatchQueue.main.asyncAfter(deadline: .now() + fullTime) {
+            let clock = ContinuousClock()
+            let now = clock.now
+            let futureTime = now.advanced(by: .seconds(fullTime))
+            let tolerance: Duration = .seconds(0.5)
+            
+            Task {
+                try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
                 self.resetDiscoverableMode()
             }
         }
@@ -87,14 +96,11 @@ class PrefWatcher {
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
         guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
-//        if let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") {
         domain?.set(ADASetting, forKey: "DiscoverableMode")
-//        }
-        
         let process = Process()
         process.launchPath = "/usr/bin/killall"
         process.arguments = ["sharingd"]
-
+        
         let outputPipe = Pipe()
         process.standardOutput = outputPipe
         let errorPipe = Pipe()
