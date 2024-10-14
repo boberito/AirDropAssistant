@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7318DA972C8F710D004F262A /* UpdateCheck.swift */; };
+		732889762CBCABBB00234AA2 /* ADA_PF_Helper_Script.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 735DA8122CB8C2E3000F9D71 /* ADA_PF_Helper_Script.sh */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; };
 		7328CDA72C8BA9160042A517 /* com.ttinc.Air-Drop-Assistant.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		735DA8132CB8C2E3000F9D71 /* ADA_PF_Helper_Script.sh in Resources */ = {isa = PBXBuildFile; fileRef = 735DA8122CB8C2E3000F9D71 /* ADA_PF_Helper_Script.sh */; };
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
@@ -21,6 +21,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		732889752CBCAB9700234AA2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "Air Drop Assistant.app/Contents/Resources";
+			dstSubfolderSpec = 16;
+			files = (
+				732889762CBCABBB00234AA2 /* ADA_PF_Helper_Script.sh in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7328CDA62C8BA8FD0042A517 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -106,6 +116,7 @@
 				73FFDCF42C70210B00244D57 /* Frameworks */,
 				73FFDCF52C70210B00244D57 /* Resources */,
 				7328CDA62C8BA8FD0042A517 /* CopyFiles */,
+				732889752CBCAB9700234AA2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -156,7 +167,6 @@
 			files = (
 				7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */,
 				73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */,
-				735DA8132CB8C2E3000F9D71 /* ADA_PF_Helper_Script.sh in Resources */,
 				73FFDD022C70210C00244D57 /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
