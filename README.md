@@ -51,6 +51,14 @@ and
 
 `/Applications/Utilities/Air\ Drop\ Assistant.app/Contents/MacOS/Air\ Drop\ Assistant --unregister`
 
+ADA AirDrop directional restriction can be configured by MDM.
+
+`/Applications/Utilities/Air\ Drop\ Assistant.app/Contents/Resources/ADA_PF_Helper_Script.sh -argument`
+
+- `-blockOut` blocks outgoing AirDrop
+- `-blockIn` blocks incoming AirDrop
+- `-remove` allows AirDrop both directions
+
 Example mobileconfig
 ```
 <?xml version="1.0" encoding="UTF-8"?>
