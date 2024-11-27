@@ -12,7 +12,49 @@ import ServiceManagement
 @NSApplicationMain
 
 
-class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate, AppPrefObserverDelegate {
+    func newPreferenceValue() {
+        menuIcon()
+        
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
+        let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
+        
+        if hideMenuIconValue && isForced {
+            adaMenu.menu?.removeAllItems()
+            NSStatusBar.system.removeStatusItem(adaMenu)
+        } else {
+            guard let adaMenuItems = adaMenu.menu else { return }
+                adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+                
+                adaMenu.menu = NSMenu()
+                
+                menuIcon()
+                
+                adaMenuListing()
+                let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+                let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+                
+                var IncreaseByOne: Int = 0
+                if let menuItems = adaMenu.menu {
+                    for item in menuItems.items {
+                        
+                        if item.title == "AirDrop: Incoming Only"{
+                            IncreaseByOne += 1
+                        }
+                        if  item.title == "AirDrop: Outgoing Only" {
+                            IncreaseByOne += 1
+                        }
+                    }
+                }
+                
+                adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+                adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+                let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
+                adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+        }
+    }
+    
     func checkAirDrop() {
         if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
             return
@@ -81,12 +123,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     }
     
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
-    let adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    var adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     var airDropStatus = ""
     let prefWatcher = PrefWatcher()
     let updater = UpdateCheck()
-    let prefViewController = PreferencesViewController()
-    
+    let observer = AppPreferencesObserver()
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         // Ensure that the app doesn't show the menu bar or Dock icon when reopened
         NSApp.setActivationPolicy(.accessory)
@@ -94,6 +135,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         NSLog("ADA Launched")
+        
         NSApp.setActivationPolicy(.accessory)
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
@@ -131,7 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-            NSApp.terminate(nil)
+//            NSApp.terminate(nil)
         }
         
         if airDropManagedDisabled() {
@@ -181,7 +223,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             UserDefaults.standard.set(15, forKey: "timing")
         }
         prefWatcher.delegate = self
-        prefViewController.delegate = self
+        observer.delegate = self
         
         if domain?.string(forKey: "DiscoverableMode") != UserDefaults.standard.string(forKey: "airDropSetting") && domain?.string(forKey: "DiscoverableMode") != "Off" {
             Task {
@@ -332,6 +374,8 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 return
             }
         }
+        let prefViewController = PreferencesViewController()
+        prefViewController.delegate = self
         var window: PreferencesWindow?
         let windowSize = NSSize(width: 415, height: 200)
         let screenSize = NSScreen.main?.frame.size ?? .zero
