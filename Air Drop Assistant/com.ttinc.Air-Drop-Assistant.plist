@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>KeepAlive</key>
+	<true/>
 	<key>Label</key>
 	<string>com.ttinc.Air-Drop-Assistant</string>
 	<key>RunAtLoad</key>
@@ -10,7 +12,7 @@
 	<string>Contents/MacOS/Air Drop Assistant</string>
 	<key>ProcessType</key>
 	<string>Interactive</string>
-    <key>LimitLoadToSessionType</key>
-    <string>Aqua</string>
+	<key>LimitLoadToSessionType</key>
+	<string>Aqua</string>
 </dict>
 </plist>
