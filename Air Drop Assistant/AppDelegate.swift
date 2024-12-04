@@ -24,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             adaMenu.menu?.removeAllItems()
             NSStatusBar.system.removeStatusItem(adaMenu)
         } else {
-            guard let adaMenuItems = adaMenu.menu else { return }
+            guard adaMenu.menu != nil else { return }
                 adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 
                 adaMenu.menu = NSMenu()
@@ -148,7 +148,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             }
             let arguments = CommandLine.arguments
             let stringarguments = String(describing: arguments)
-            NSLog(stringarguments)
             
             if arguments[1] == "--register" {
                 do {
@@ -173,7 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-//            NSApp.terminate(nil)
+            NSApp.terminate(nil)
         }
         
         if airDropManagedDisabled() {
@@ -302,7 +301,6 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     func adaMenuListing(){
         
         var PFADAStatus: String?
-//        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
         let path = "/Library/Preferences/\(bundleID).plist"
         
