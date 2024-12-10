@@ -137,9 +137,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         NSLog("ADA Launched")
         
         NSApp.setActivationPolicy(.accessory)
-        if isAppAlreadyRunning() {
-            NSApp.terminate(nil)
-        }
+        
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
             if airDropManagedDisabled() {
@@ -147,7 +145,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
-            let stringarguments = String(describing: arguments)
             
             if arguments[1] == "--register" {
                 do {
@@ -174,7 +171,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             }
             NSApp.terminate(nil)
         }
-        
+        if isAppAlreadyRunning() {
+            NSApp.terminate(nil)
+        }
         if airDropManagedDisabled() {
             let alert = NSAlert()
             alert.messageText = "Alert"
