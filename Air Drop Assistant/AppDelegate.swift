@@ -11,7 +11,6 @@ import ServiceManagement
 
 @NSApplicationMain
 
-
 class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate, AppPrefObserverDelegate {
     func newPreferenceValue() {
         menuIcon()
@@ -348,7 +347,6 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 adaMenu.menu?.insertItem(NSMenuItem(title: status, action: nil, keyEquivalent: ""), at: 1)
             }
         }
-   
         
     }
     
