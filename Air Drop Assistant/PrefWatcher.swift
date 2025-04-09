@@ -97,6 +97,32 @@ class PrefWatcher {
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
         guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
         domain?.set(ADASetting, forKey: "DiscoverableMode")
+        
+        var airDropInUse = true
+        repeat {
+            let task = Process()
+            task.launchPath = "/bin/bash"
+            let command = """
+        /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $9 !~ /AirDropHashDB|\\.plist|\\.loctable|\\.car|\\/System/' | /usr/bin/tail -1
+        """
+            task.arguments = ["-c", command]
+            let pipe = Pipe()
+            task.standardOutput = pipe
+            task.launch()
+            task.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: data, encoding: .utf8) ?? ""
+            
+            if output == "" {
+                airDropInUse = false
+            } else {
+                NSLog("Airdrop in use, will try again in 5 seconds.")
+                airDropInUse = true
+                Thread.sleep(forTimeInterval: 5)
+            }
+            
+        } while airDropInUse
         let process = Process()
         process.launchPath = "/usr/bin/killall"
         process.arguments = ["sharingd"]
