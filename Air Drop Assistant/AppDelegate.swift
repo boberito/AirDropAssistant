@@ -92,18 +92,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         }
         
         self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
-        guard let menuCount = adaMenu.menu?.items.count else { return }
+        
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
             NSLog("Updates disabled, not adding the update menu")
         } else {
-            
             adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
         }
         
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-        
+        guard let menuCount = adaMenu.menu?.items.count else { return }
         self.adaMenu.menu?.insertItem(quit, at: menuCount)
     }
     func updatePF() {
@@ -134,6 +133,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
             NSLog("Updates disabled, not adding the update menu")
         } else {
+//            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
         }
         
