@@ -50,23 +50,22 @@ class PrefWatcher {
                             await self.resetAirDrop()
                         }
                     } catch {
-                        
-                        print(error)
+                        NSLog(error.localizedDescription)
                     }
                 } else {
-                    //                    print("something else")
+                    NSLog("Something unexpected happened to the preference file")
                 }
             }
             
             source?.setCancelHandler {
-                //                print("source canceled")
+                
                 self.startMonitoring()
             }
             
             source?.resume()
             
         } catch {
-            print(error)
+            NSLog(error.localizedDescription)
         }
     }
     
