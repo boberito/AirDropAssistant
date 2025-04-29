@@ -48,9 +48,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
                 adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+            let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
+            if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
+                NSLog("Updates disabled, not adding the update menu")
+            } else {
                 adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+            }
                 let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-                adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+            guard let menuCount = adaMenu.menu?.items.count else { return }
+                adaMenu.menu?.insertItem(quit, at: menuCount)
         }
     }
     
@@ -86,9 +92,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         }
         
         self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
-        self.adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
+        if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
+            NSLog("Updates disabled, not adding the update menu")
+        } else {
+            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        }
+        
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-        self.adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+        guard let menuCount = adaMenu.menu?.items.count else { return }
+        self.adaMenu.menu?.insertItem(quit, at: menuCount)
     }
     func updatePF() {
         
@@ -113,9 +128,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         }
         
         self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
-        self.adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
+        if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
+            NSLog("Updates disabled, not adding the update menu")
+        } else {
+//            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+        }
+        
         let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-        self.adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+        guard let menuCount = adaMenu.menu?.items.count else { return }
+        self.adaMenu.menu?.insertItem(quit, at: menuCount)
     }
     func didRecievePrefUpdate(iconMode: String) {
         self.menuIcon()
@@ -140,7 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
             if airDropManagedDisabled() {
-                print("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
+                NSLog("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
@@ -241,13 +265,20 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         if hideMenuIconValue && isForced {
             prefWatcher.startMonitoring()
         } else {
-            _ = updater.check()
+            let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
+            if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
+                NSLog("Updates disabled")
+            } else {
+                
+                _ = updater.check()
+            }
             adaMenu.menu = NSMenu()
             
             self.menuIcon()
             
             adaMenuListing()
             let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+            
             let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
             
             var IncreaseByOne: Int = 0
@@ -264,9 +295,15 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             }
             
             adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
-            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+            if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
+                NSLog("Updates disabled, not adding the update menu")
+            } else {
+                adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
+            }
+            
             let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
-            adaMenu.menu?.insertItem(quit, at: 3 + IncreaseByOne)
+            guard let menuCount = adaMenu.menu?.items.count else { return }
+            adaMenu.menu?.insertItem(quit, at: menuCount)
             prefWatcher.startMonitoring()
         }
         

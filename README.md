@@ -43,6 +43,10 @@ Acceptable Value: **colorful** or **bw**
 Acceptable Value: **true** or **false**
 - Hides the first launch question.
 
+`disableUpdates` - **Type: Boolean**
+Acceptable Value: **true** or **false**
+- Disables update checking at launch and hides menu item to check.
+
 ADA can also be registered to load at login with the argument register and removed from login items as well.
 
 `/Applications/Utilities/Air\ Drop\ Assistant.app/Contents/MacOS/Air\ Drop\ Assistant --register`
