@@ -6,6 +6,7 @@
 //
 import Cocoa
 import os
+import OSLog
 
 struct githubData: Decodable {
     let tag_name: String
@@ -14,7 +15,6 @@ struct githubData: Decodable {
 class UpdateCheck {
     
     func check() -> Int{
-//        https://github.com/boberito/AirDropAssistant
         let sc_menuURL = "https://api.github.com/repos/boberito/AirDropAssistant/releases/latest"
         var request = URLRequest(url: URL(string: sc_menuURL)!)
         request.timeoutInterval = 3.0
@@ -27,7 +27,7 @@ class UpdateCheck {
             let httpResponse = response as? HTTPURLResponse
             let dataReturn = data
             if (error != nil) {
-                NSLog("An Error Occured - offline or can't reach GitHub")
+                Logger.updater.error("An Error Occured - offline or can't reach GitHub")
                 updateNeeded = 2
                 dispatchGroup.leave()
             } else {
@@ -40,24 +40,23 @@ class UpdateCheck {
                             if let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, let gitHubVersion = version {
                                 let versionCompare = currentVersion.compare(gitHubVersion, options: .numeric)
                                 if versionCompare == .orderedSame {
-                                    NSLog("ADA is up to date")
-                                    
+                                    Logger.updater.info("ADA is update to date")
                                     updateNeeded = 0
                                 } else if versionCompare == .orderedAscending {
                                     DispatchQueue.main.async {
                                         self.alert(githubVersion: gitHubVersion, current: currentVersion)
                                     }
-                                    NSLog("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
+                                    Logger.updater.info("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
                                     updateNeeded = 1
                                 } else if versionCompare == .orderedDescending {
-                                    NSLog("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
+                                    Logger.updater.info("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
                                     updateNeeded = 0
                                 }
                             }
                         }
                         dispatchGroup.leave()
                     default:
-                        NSLog("Offline or cannot reach GitHub")
+                        Logger.updater.error("Offline or cannot reach GitHub")
                         updateNeeded = 2
                         dispatchGroup.leave()
                     }
@@ -89,10 +88,10 @@ class UpdateCheck {
                 NSWorkspace.shared.open(url)
             }
         case .alertSecondButtonReturn:
-            NSLog("Update later")
+            Logger.general.log("Update later")
             
         default:
-            NSLog("Somehow closed the alert without pushing a button")
+            Logger.general.debug("Somehow closed the alert without pushing a button")
         }
     }
     

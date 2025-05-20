@@ -8,6 +8,7 @@
 import Foundation
 import System
 import UserNotifications
+import OSLog
 
 protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
@@ -44,16 +45,17 @@ class PrefWatcher {
                         
                         if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
+                            Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                         }
-                        NSLog("Airdrop Status Changed")
+                        
                         Task {
                             await self.resetAirDrop()
                         }
                     } catch {
-                        NSLog(error.localizedDescription)
+                        Logger.airdropstatus.error("\(error.localizedDescription)")
                     }
                 } else {
-                    NSLog("Something unexpected happened to the preference file")
+                    Logger.airdropstatus.error("Something unexpected happened to the preference file")
                 }
             }
             
@@ -65,7 +67,7 @@ class PrefWatcher {
             source?.resume()
             
         } catch {
-            NSLog(error.localizedDescription)
+            Logger.airdropstatus.error("\(error.localizedDescription)")
         }
     }
     
@@ -76,8 +78,8 @@ class PrefWatcher {
         } else {
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
-            NSLog("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
-            NSLog("ADA Timer Started")
+            Logger.airdropstatus.info("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
+            Logger.airdropstatus.info("ADA Timer Started")
             let clock = ContinuousClock()
             let now = clock.now
             let futureTime = now.advanced(by: .seconds(fullTime))
@@ -90,13 +92,13 @@ class PrefWatcher {
         }
     }
     func resetDiscoverableMode() {
-        NSLog("Airdrop Status changed by ADA")
+        
         source?.cancel()
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
         guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
         domain?.set(ADASetting, forKey: "DiscoverableMode")
-        
+        Logger.airdropstatus.info("Airdrop Status changed by ADA to \(ADASetting)")
         var airDropInUse = true
         repeat {
             let task = Process()
@@ -116,7 +118,7 @@ class PrefWatcher {
             if output == "" {
                 airDropInUse = false
             } else {
-                NSLog("Airdrop in use, will try again in 5 seconds.")
+                Logger.airdropstatus.info("Airdrop in use, will try again in 5 seconds.")
                 airDropInUse = true
                 Thread.sleep(forTimeInterval: 5)
             }
