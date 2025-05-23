@@ -10,6 +10,22 @@ import System
 import UserNotifications
 import OSLog
 
+extension DispatchSourceFileSystemObject {
+    var dataStrings: [String] {
+        var s = [String]()
+        if data.contains(.all)      { s.append("all") }
+        if data.contains(.attrib)   { s.append("attrib") }
+        if data.contains(.delete)   { s.append("delete") }
+        if data.contains(.extend)   { s.append("extend") }
+        if data.contains(.funlock)  { s.append("funlock") }
+        if data.contains(.link)     { s.append("link") }
+        if data.contains(.rename)   { s.append("rename") }
+        if data.contains(.revoke)   { s.append("revoke") }
+        if data.contains(.write)    { s.append("write") }
+        return s
+    }
+}
+
 protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
 }
@@ -34,6 +50,12 @@ class PrefWatcher {
             source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
             source?.setEventHandler {
                 let event = self.source?.data
+                
+                if let eventStrings = self.source?.dataStrings {
+                    Logger.airdropstatus.info("\(self.filePath) File system event: \(eventStrings.joined(separator: ", "))")
+                    
+                }
+                
                 if event?.contains(.delete) == true || event?.contains(.rename) == true {
                     do {
                         // Close the existing file descriptor
@@ -54,8 +76,6 @@ class PrefWatcher {
                     } catch {
                         Logger.airdropstatus.error("\(error.localizedDescription)")
                     }
-                } else {
-                    Logger.airdropstatus.error("Something unexpected happened to the preference file")
                 }
             }
             

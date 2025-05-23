@@ -24,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             adaMenu.menu?.removeAllItems()
             NSStatusBar.system.removeStatusItem(adaMenu)
         } else {
-            guard adaMenu.menu != nil else { return }
+//            guard adaMenu.menu != nil else { return }
                 adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 
                 adaMenu.menu = NSMenu()
@@ -71,7 +71,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     
     let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
-        
+        let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
+        if hideMenuIconValue {
+           return
+        }
         self.adaMenu.menu?.removeAllItems()
         self.adaMenu.menu = NSMenu()
         
@@ -192,7 +195,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-            NSApp.terminate(nil)
+//            NSApp.terminate(nil)
         }
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
