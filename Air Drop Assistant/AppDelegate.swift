@@ -24,7 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             adaMenu.menu?.removeAllItems()
             NSStatusBar.system.removeStatusItem(adaMenu)
         } else {
-//            guard adaMenu.menu != nil else { return }
                 adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 
                 adaMenu.menu = NSMenu()
@@ -195,7 +194,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-//            NSApp.terminate(nil)
+            NSApp.terminate(nil)
         }
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
