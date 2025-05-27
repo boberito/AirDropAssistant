@@ -8,6 +8,7 @@
 import Cocoa
 import UserNotifications
 import ServiceManagement
+import OSLog
 
 @NSApplicationMain
 
@@ -23,7 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             adaMenu.menu?.removeAllItems()
             NSStatusBar.system.removeStatusItem(adaMenu)
         } else {
-            guard adaMenu.menu != nil else { return }
                 adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 
                 adaMenu.menu = NSMenu()
@@ -50,7 +50,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
             let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
-                NSLog("Updates disabled, not adding the update menu")
+                Logger.general.info("Updates disabled, not adding the update menu")
             } else {
                 adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             }
@@ -70,7 +70,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     
     let nc = UNUserNotificationCenter.current()
     func didReceiveDataUpdate(airDropStatus: String) {
-        
+        let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
+        if hideMenuIconValue {
+           return
+        }
         self.adaMenu.menu?.removeAllItems()
         self.adaMenu.menu = NSMenu()
         
@@ -96,7 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
-            NSLog("Updates disabled, not adding the update menu")
+            Logger.general.info("Updates disabled, not adding the update menu")
         } else {
             adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
         }
@@ -131,7 +134,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
-            NSLog("Updates disabled, not adding the update menu")
+            Logger.general.info("Updates disabled, not adding the update menu")
         } else {
 //            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
@@ -152,19 +155,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let updater = UpdateCheck()
     let observer = AppPreferencesObserver()
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        // Ensure that the app doesn't show the menu bar or Dock icon when reopened
         NSApp.setActivationPolicy(.accessory)
         return false
     }
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        NSLog("ADA Launched")
+        Logger.general.info("ADA Launched")
         
         NSApp.setActivationPolicy(.accessory)
         
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
             if airDropManagedDisabled() {
-                NSLog("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
+                Logger.general.info("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
@@ -172,9 +174,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             if arguments[1] == "--register" {
                 do {
                     try appService.register()
-                    NSLog("registered service")
+                    Logger.general.info("registered service")
                 } catch {
-                    NSLog("problem registering service")
+                    Logger.general.error("Problem registering service")
                 }
             }
             
@@ -183,12 +185,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                     if appService.status == .enabled {
                         try appService.unregister()
                         
-                        NSLog("unregistered service")
+                        Logger.general.info("Unregistered service")
                     }
                     
                 } catch {
                     
-                    NSLog("problem unregistering service")
+                    Logger.general.error("Problem unregistering service")
                 }
                 
             }
@@ -221,9 +223,9 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 
                 do {
                     try appService.register()
-                    NSLog("registered service")
+                    Logger.general.info("Registered service")
                 } catch {
-                    NSLog("problem registering service")
+                    Logger.general.error("problem registering service \(error.localizedDescription)")
                 }
             }
             
@@ -267,7 +269,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         } else {
             let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
-                NSLog("Updates disabled")
+                Logger.general.info("Updates disabled")
             } else {
                 
                 _ = updater.check()
@@ -296,7 +298,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             
             adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
-                NSLog("Updates disabled, not adding the update menu")
+                Logger.general.info("Updates disabled, not adding the update menu")
             } else {
                 adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             }
@@ -388,7 +390,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     
     @objc func launchAtLogin(){
-        NSLog("launchatlogin function")
+        Logger.general.info("Launch at Loging Function")
         
         UserDefaults.standard.setValue(true, forKey: "afterFirstLaunch")
     }
@@ -440,14 +442,14 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         let networkBrowser = UserDefaults(suiteName: "com.apple.NetworkBrowser")
         if let networkBrowserAirDrop = networkBrowser?.bool(forKey: "DisableAirDrop") {
             if networkBrowserAirDrop {
-                NSLog("com.apple.NetworkBrowser DisableAirDrop is set to true")
+                Logger.general.info("com.apple.NetworkBrowser DisableAirDrop is set to true")
                 return true
             }
         }
         if let value = UserDefaults.standard.persistentDomain(forName: "com.apple.applicationaccess")?["allowAirDrop"] {
             if let boolValue = value as? Bool {
                 if !boolValue {
-                    NSLog("com.apple.applicationaccess allowAirDrop is set to false")
+                    Logger.general.info("com.apple.applicationaccess allowAirDrop is set to false")
                     return true
                 }
                 

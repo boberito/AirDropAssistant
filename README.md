@@ -111,3 +111,25 @@ Example mobileconfig
 </dict>
 </plist>
 ```
+
+To configuration notifications you'll want to create a `com.apple.notificationsettings` profile to include these keys
+```
+<!--- THIS KEY IS REQUIRED TO IDENTIFY WHAT APP -->
+<key>BundleIdentifier</key>
+	<string>com.ttinc.Air-Drop-Assistant</string>
+
+<!--- IF YOU WANT ZERO NOTIFICATIONS SET THESE TWO TO FALSE -->
+<key>NotificationsEnabled</key>
+	<true/>
+<key>CriticalAlertEnabled</key>
+	<false/>
+
+<!--- THIS CAN BE SET TO 0 (Off), 1 (Temporary), 2 (Persistent) -->
+<key>AlertType</key>
+	<integer>1</integer>
+				
+<key>ShowInLockScreen</key>
+	<true/>
+<key>ShowInNotificationCenter</key>
+	<true/>
+```

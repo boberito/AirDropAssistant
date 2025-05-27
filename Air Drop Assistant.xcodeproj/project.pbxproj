@@ -15,6 +15,7 @@
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
 		73B614B92CF77F5500C3A14F /* PreferenceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */; };
+		73B6ABB62DDC16150028024F /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B6ABB52DDC16150028024F /* Logger.swift */; };
 		73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFA2C70210B00244D57 /* AppDelegate.swift */; };
 		73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFC2C70210B00244D57 /* ViewController.swift */; };
 		73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDCFE2C70210C00244D57 /* Assets.xcassets */; };
@@ -53,6 +54,7 @@
 		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
 		737B8A342C8BE5D1006A4653 /* Air-Drop-Assistant-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Air-Drop-Assistant-Info.plist"; sourceTree = SOURCE_ROOT; };
 		73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceObserver.swift; sourceTree = "<group>"; };
+		73B6ABB52DDC16150028024F /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73FFDCFA2C70210B00244D57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		73FFDCFC2C70210B00244D57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */,
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
 				736C80F82C70302200E5E780 /* PrefWatcher.swift */,
+				73B6ABB52DDC16150028024F /* Logger.swift */,
 				73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */,
 				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
 				7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */,
@@ -188,6 +191,7 @@
 				73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */,
 				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
 				7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */,
+				73B6ABB62DDC16150028024F /* Logger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,13 +338,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 234;
 				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Drop Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -349,7 +354,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ttinc.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -369,13 +374,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 234;
 				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Drop Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -384,7 +390,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ttinc.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
