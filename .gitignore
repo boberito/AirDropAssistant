@@ -1,11 +1,44 @@
-Packages
-.build
-xcuserdata
-*.xcodeproj
-DerivedData/
+# macOS system files
 .DS_Store
-db.sqlite
-.swiftpm
+
+# Xcode user-specific data
+*.xcworkspace
+*.xcuserstate
+*.xcuserdatad
+*.xccheckout
+*.moved-aside
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# SPM checkouts (if used)
+Packages/
+
+# Environment / Secrets
 .env
 .env.*
 !.env.example
+
+# SQLite or temp DBs
+*.sqlite
+
+# Log files
+*.log
+*.swp
+*~
+
+# App-specific
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Crash reports
+*.crash
+*.xcresult
+
+# Archive
+*.xcarchive
