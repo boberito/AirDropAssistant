@@ -136,7 +136,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
             Logger.general.info("Updates disabled, not adding the update menu")
         } else {
-//            adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
         }
         
@@ -165,6 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         if CommandLine.arguments.count > 1 {
+            
             if airDropManagedDisabled() {
                 Logger.general.info("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
                 NSApp.terminate(nil)
@@ -172,6 +172,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             let arguments = CommandLine.arguments
             
             if arguments[1] == "--register" {
+                let ADAPids = NSRunningApplication.runningApplications(withBundleIdentifier: "com.ttinc.Air-Drop-Assistant")
+                if ADAPids.count > 1 {
+                    ADAPids[0].terminate()
+                }
+                                
                 do {
                     try appService.register()
                     Logger.general.info("registered service")
