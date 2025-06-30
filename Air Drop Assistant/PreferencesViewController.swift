@@ -384,8 +384,7 @@ class PreferencesViewController: NSViewController {
                     NSLog("unregistered service")
                 }
                 
-            } catch {
-                
+            } catch {                
                 NSLog("problem unregistering service")
             }
         }
