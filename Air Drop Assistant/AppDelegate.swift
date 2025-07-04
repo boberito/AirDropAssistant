@@ -199,7 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-            NSApp.terminate(nil)
+//            NSApp.terminate(nil)
         }
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
@@ -276,8 +276,13 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
                 Logger.general.info("Updates disabled")
             } else {
-                
-                _ = updater.check()
+                Task {
+                    do {
+                        try await updater.check()
+                    } catch {
+                        Logger.updater.error("Error checking for updates: \(error)")
+                    }
+                }
             }
             adaMenu.menu = NSMenu()
             
@@ -440,8 +445,14 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         return isRunning
     }
-    @objc func updateCheckFunc () {
-        _ = updater.check()
+    @objc func updateCheckFunc (){
+        Task {
+            do {
+                try await updater.check()
+            } catch {
+                Logger.updater.error("Error checking for updates: \(error)")
+            }
+        }
     }
     func airDropManagedDisabled () -> Bool {
         let networkBrowser = UserDefaults(suiteName: "com.apple.NetworkBrowser")
