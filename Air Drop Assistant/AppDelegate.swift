@@ -199,7 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-//            NSApp.terminate(nil)
+            NSApp.terminate(nil)
         }
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
@@ -277,11 +277,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 Logger.general.info("Updates disabled")
             } else {
                 Task {
-                    do {
-                        try await updater.check()
-                    } catch {
-                        Logger.updater.error("Error checking for updates: \(error)")
-                    }
+                    await updater.check()
                 }
             }
             adaMenu.menu = NSMenu()
@@ -447,11 +443,9 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     @objc func updateCheckFunc (){
         Task {
-            do {
-                try await updater.check()
-            } catch {
-                Logger.updater.error("Error checking for updates: \(error)")
-            }
+
+            await updater.check()
+            
         }
     }
     func airDropManagedDisabled () -> Bool {

@@ -14,16 +14,14 @@ struct githubData: Decodable {
 
 class UpdateCheck {
     
-    func check() async throws{
+    func check() async{
         let sc_menuURL = "https://api.github.com/repos/boberito/AirDropAssistant/releases/latest"
         var request = URLRequest(url: URL(string: sc_menuURL)!)
         request.timeoutInterval = 3.0
-//        var updateNeeded = 0
         var version: String? = nil
         guard let (data, response) = try? await URLSession.shared.data(for: request) else {
             Logger.updater.error("Offline or cannot reach GitHub")
-//            updateNeeded = 2
-            throw NSError(domain: "Air Drop Assistant", code: 1001, userInfo: nil)
+            return
         }
         
         let httpResponseCode = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -36,16 +34,15 @@ class UpdateCheck {
                         let versionCompare = currentVersion.compare(gitHubVersion, options: .numeric)
                         if versionCompare == .orderedSame {
                             Logger.updater.info("ADA is update to date")
-//                            updateNeeded = 0
+
                         } else if versionCompare == .orderedAscending {
                             
                             alert(githubVersion: gitHubVersion, current: currentVersion)
                             
                             Logger.updater.info("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
-//                            updateNeeded = 1
+
                         } else if versionCompare == .orderedDescending {
                             Logger.updater.info("Current is \(currentVersion.description), newest is \(gitHubVersion.description)")
-//                            updateNeeded = 0
                         }
                     }
                 }
