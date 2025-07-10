@@ -7,8 +7,6 @@
 import Combine
 import Foundation
 
-
-
 extension UserDefaults {
     @objc dynamic var hideMenuIcon: String? {
         return string(forKey: "hideMenuIcon")
@@ -59,6 +57,3 @@ class AppPreferencesObserver {
             .store(in: &cancellables)
     }
 }
-
-// Usage
-

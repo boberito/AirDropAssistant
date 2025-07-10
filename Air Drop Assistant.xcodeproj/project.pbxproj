@@ -17,7 +17,6 @@
 		73B614B92CF77F5500C3A14F /* PreferenceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */; };
 		73B6ABB62DDC16150028024F /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B6ABB52DDC16150028024F /* Logger.swift */; };
 		73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFA2C70210B00244D57 /* AppDelegate.swift */; };
-		73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFC2C70210B00244D57 /* ViewController.swift */; };
 		73FFDCFF2C70210C00244D57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDCFE2C70210C00244D57 /* Assets.xcassets */; };
 		73FFDD022C70210C00244D57 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 73FFDD012C70210C00244D57 /* Base */; };
 /* End PBXBuildFile section */
@@ -57,7 +56,6 @@
 		73B6ABB52DDC16150028024F /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		73FFDCFA2C70210B00244D57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		73FFDCFC2C70210B00244D57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		73FFDCFE2C70210C00244D57 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		73FFDD012C70210C00244D57 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		73FFDD032C70210C00244D57 /* Air_Drop_Assistant.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Air_Drop_Assistant.entitlements; sourceTree = "<group>"; };
@@ -102,7 +100,6 @@
 				73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */,
 				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
 				7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */,
-				73FFDCFC2C70210B00244D57 /* ViewController.swift */,
 				73FFDCFE2C70210C00244D57 /* Assets.xcassets */,
 				73FFDD002C70210C00244D57 /* Main.storyboard */,
 				73FFDD032C70210C00244D57 /* Air_Drop_Assistant.entitlements */,
@@ -187,7 +184,6 @@
 				736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */,
 				73B614B92CF77F5500C3A14F /* PreferenceObserver.swift in Sources */,
 				736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */,
-				73FFDCFD2C70210B00244D57 /* ViewController.swift in Sources */,
 				73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */,
 				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
 				7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */,
@@ -354,7 +350,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ttinc.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -390,7 +386,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ttinc.Air-Drop-Assistant";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
