@@ -8,17 +8,28 @@ import Cocoa
 import os
 import OSLog
 
+// MARK: - UpdateCheck Overview
+// Contacts GitHub Releases to determine if a newer version is available and, if so,
+// prompts the user with a modal alert and a link to the releases page.
+
+/// Minimal model for the GitHub releases API response.
 struct githubData: Decodable {
     let tag_name: String
 }
 
+/// Performs async update checks and presents UI alerts when updates are found.
 class UpdateCheck {
     
+    // MARK: - Public API
+    /// Fetch the latest release tag from GitHub and compare it numerically to the app's version.
+    /// On a newer version, present an alert to the user.
     func check() async{
         let sc_menuURL = "https://api.github.com/repos/boberito/AirDropAssistant/releases/latest"
         var request = URLRequest(url: URL(string: sc_menuURL)!)
+        // Keep the request short to avoid blocking UI
         request.timeoutInterval = 3.0
         var version: String? = nil
+        // Network error or offline; bail out quietly
         guard let (data, response) = try? await URLSession.shared.data(for: request) else {
             Logger.updater.error("Offline or cannot reach GitHub")
             return
@@ -26,11 +37,14 @@ class UpdateCheck {
         
         let httpResponseCode = (response as? HTTPURLResponse)?.statusCode ?? 0
         
+        // Only proceed on success
         if httpResponseCode == 200 {
+            // Decode minimal JSON to get tag_name
             let decoder = JSONDecoder()
             if let githubData = try? decoder.decode(githubData.self, from: data) {
                     version = githubData.tag_name
                     if let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, let gitHubVersion = version {
+                        // Compare semantic versions using .numeric
                         let versionCompare = currentVersion.compare(gitHubVersion, options: .numeric)
                         if versionCompare == .orderedSame {
                             Logger.updater.info("ADA is update to date")
@@ -49,6 +63,7 @@ class UpdateCheck {
         }
     }
     
+    /// Present a modal alert on the main queue offering to open the releases page.
     func alert(githubVersion: String, current: String) {
         DispatchQueue.main.async {
             let alert = NSAlert()
@@ -78,3 +93,4 @@ class UpdateCheck {
     }
     
 }
+

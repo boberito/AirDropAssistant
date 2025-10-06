@@ -10,6 +10,12 @@ import System
 import UserNotifications
 import OSLog
 
+// MARK: - PrefWatcher Overview
+// Watches the sharingd preference file for changes and enforces the configured
+// AirDrop DiscoverableMode after a configurable delay. Also posts local notifications
+// when status changes, if permitted.
+
+/// Convenience to render human-readable strings for DispatchSource filesystem events.
 extension DispatchSourceFileSystemObject {
     var dataStrings: [String] {
         var s = [String]()
@@ -26,27 +32,38 @@ extension DispatchSourceFileSystemObject {
     }
 }
 
+/// Delegate for reporting AirDrop status updates to the app (e.g., to rebuild the menu).
 protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
 }
 
-
+/// Encapsulates file monitoring of the sharingd preferences and logic to reset
+/// AirDrop settings back to the desired value after a delay.
 class PrefWatcher {
     
+    /// Reports updates to UI/menu via delegate
     var delegate: DataModelDelegate?
+    /// Whether we can post local notifications
     var notificationsAllow = false
+    /// (Unused) Placeholder for FSEvents stream if needed
     var eventStream: FSEventStreamRef?
+    /// Dispatch source for low-level file change events
     var source: DispatchSourceFileSystemObject?
+    /// Backed UserDefaults domain for sharingd
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
+    /// Full path to com.apple.sharingd.plist under the current user's Library/Preferences
     var filePath = ""
     
+    // MARK: - Monitoring
+    /// Starts monitoring the preferences file for rename/delete, which indicates a write.
+    /// Re-establishes the watch as needed when the file is rotated.
     func startMonitoring() {
         
         do {
-            // Open the file descriptor in event-only mode
+            // Open an event-only file descriptor to observe changes
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
             
-            // Create the dispatch source
+            // Create a DispatchSource for all file system events on the descriptor
             source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
             source?.setEventHandler {
                 let event = self.source?.data
@@ -56,6 +73,7 @@ class PrefWatcher {
                     
                 }
                 
+                // File was rotated/replaced, treat as a write and reconfigure monitoring
                 if event?.contains(.delete) == true || event?.contains(.rename) == true {
                     do {
                         // Close the existing file descriptor
@@ -65,11 +83,13 @@ class PrefWatcher {
                         self.source?.cancel()
                         self.source = nil
                         
+                        // Notify delegate with the new AirDrop status
                         if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
                             Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                         }
                         
+                        // Schedule enforcement back to the desired setting
                         Task {
                             await self.resetAirDrop()
                         }
@@ -79,6 +99,7 @@ class PrefWatcher {
                 }
             }
             
+            // Re-arm monitoring after cancelation
             source?.setCancelHandler {
                 
                 self.startMonitoring()
@@ -91,11 +112,16 @@ class PrefWatcher {
         }
     }
     
+    // MARK: - Enforcement
+    /// Waits the configured delay and then calls resetDiscoverableMode() unless
+    /// the system is already at the desired state or Off.
     func resetAirDrop() async {
+        // No enforcement needed if already compliant or Off
         if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
             return
             
         } else {
+            // Read the enforcement delay (in minutes) from UserDefaults
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
             Logger.airdropstatus.info("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
@@ -105,24 +131,30 @@ class PrefWatcher {
             let futureTime = now.advanced(by: .seconds(fullTime))
             let tolerance: Duration = .seconds(0.5)
             
+            // Sleep until the desired time using ContinuousClock, then enforce
             Task {
                 try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
                 self.resetDiscoverableMode()
             }
         }
     }
+    /// Immediately enforce the desired DiscoverableMode, wait for AirDrop activity to finish,
+    /// restart sharingd to apply, optionally post a notification, and re-arm monitoring.
     func resetDiscoverableMode() {
         
+        // Pause monitoring while we mutate the file
         source?.cancel()
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
         guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
+        // Set the desired AirDrop mode
         domain?.set(ADASetting, forKey: "DiscoverableMode")
         Logger.airdropstatus.info("Airdrop Status changed by ADA to \(ADASetting)")
         var airDropInUse = true
         repeat {
             let task = Process()
             task.launchPath = "/bin/bash"
+            // Poll for active AirDrop file activity to avoid interrupting transfers
             let command = """
         /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $9 !~ /AirDropHashDB|\\.plist|\\.loctable|\\.car|\\/System/' | /usr/bin/tail -1
         """
@@ -144,6 +176,7 @@ class PrefWatcher {
             }
             
         } while airDropInUse
+        // Restart sharingd to ensure the new setting takes effect
         let process = Process()
         process.launchPath = "/usr/bin/killall"
         process.arguments = ["sharingd"]
@@ -155,6 +188,7 @@ class PrefWatcher {
         
         process.launch()
         process.waitUntilExit()
+        // Post a local notification to inform the user of the change
         if notificationsAllow{
             Task {
                 let settings = await nc.notificationSettings()
@@ -170,8 +204,10 @@ class PrefWatcher {
                 try await nc.add(request)
             }
         }
+        // Resume watching after enforcement
         self.startMonitoring()
         
         
     }
 }
+
