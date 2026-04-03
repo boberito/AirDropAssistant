@@ -14,6 +14,7 @@
 		736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80F82C70302200E5E780 /* PrefWatcher.swift */; };
 		736C80FE2C70EC6800E5E780 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */; };
 		736C81002C70EC9E00E5E780 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */; };
+		738E60012F79A51300802976 /* AirDropLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738E60002F79A50D00802976 /* AirDropLogging.swift */; };
 		73B614B92CF77F5500C3A14F /* PreferenceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */; };
 		73B6ABB62DDC16150028024F /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B6ABB52DDC16150028024F /* Logger.swift */; };
 		73FFDCFB2C70210B00244D57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73FFDCFA2C70210B00244D57 /* AppDelegate.swift */; };
@@ -52,6 +53,7 @@
 		736C80FD2C70EC6800E5E780 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
 		736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
 		737B8A342C8BE5D1006A4653 /* Air-Drop-Assistant-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Air-Drop-Assistant-Info.plist"; sourceTree = SOURCE_ROOT; };
+		738E60002F79A50D00802976 /* AirDropLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDropLogging.swift; sourceTree = "<group>"; };
 		73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceObserver.swift; sourceTree = "<group>"; };
 		73B6ABB52DDC16150028024F /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		73FFDCF72C70210B00244D57 /* Air Drop Assistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Drop Assistant.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,6 +99,7 @@
 				73FFDCFA2C70210B00244D57 /* AppDelegate.swift */,
 				736C80F82C70302200E5E780 /* PrefWatcher.swift */,
 				73B6ABB52DDC16150028024F /* Logger.swift */,
+				738E60002F79A50D00802976 /* AirDropLogging.swift */,
 				73B614B82CF77F5500C3A14F /* PreferenceObserver.swift */,
 				736C80FF2C70EC9E00E5E780 /* PreferencesViewController.swift */,
 				7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */,
@@ -138,7 +141,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					73FFDCF62C70210B00244D57 = {
 						CreatedOnToolsVersion = 15.4;
@@ -188,6 +191,7 @@
 				736C80F92C70302200E5E780 /* PrefWatcher.swift in Sources */,
 				7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */,
 				73B6ABB62DDC16150028024F /* Logger.swift in Sources */,
+				738E60012F79A51300802976 /* AirDropLogging.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,7 +243,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -263,6 +269,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -302,7 +309,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 2WUMX954UB;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -319,6 +328,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -335,7 +345,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 234;
-				DEVELOPMENT_TEAM = 2WUMX954UB;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";
@@ -371,7 +381,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 234;
-				DEVELOPMENT_TEAM = 2WUMX954UB;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Drop-Assistant-Info.plist";

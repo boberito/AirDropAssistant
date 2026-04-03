@@ -211,7 +211,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
-            
+            if arguments[1] == "--log" {
+                do {
+                    try SharingdLogStreamer().start()
+                    print("log starting?")
+                } catch {
+                    print("Problemo log streaming")
+                }
+            }
             // Register the login item agent (and ensure only one ADA instance runs)
             if arguments[1] == "--register" {
                 let ADAPids = NSRunningApplication.runningApplications(withBundleIdentifier: "com.ttinc.Air-Drop-Assistant")
@@ -242,7 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-            NSApp.terminate(nil)
+//            NSApp.terminate(nil)
         }
         // Ensure only a single instance of the app is running
         if isAppAlreadyRunning() {
