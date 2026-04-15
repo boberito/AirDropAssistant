@@ -16,12 +16,15 @@ struct LogEvent: Decodable {
     let processImagePath: String?
 }
 
-final class SharingdLogStreamer {
+class SharingdLogStreamer {
     private let process = Process()
     private let pipe = Pipe()
 
     func start() throws {
-        print("log starting?")
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+
         process.executableURL = URL(fileURLWithPath: "/usr/bin/log")
         let predicate = """
             process == "sharingd" AND \
@@ -34,7 +37,8 @@ final class SharingdLogStreamer {
               eventMessage CONTAINS "state: .completedSuccessfully(" OR \
               eventMessage CONTAINS "Send StateMachine START" OR \
               eventMessage CONTAINS "Received ASK response {response: ASK response" OR \
-              eventMessage CONTAINS "Adding file items (count=" )
+              eventMessage CONTAINS "Adding file items (count=" ) OR \
+              eventMessage CONTAINS " was cancelled."
             """
 //        let predicate = """
 //                subsystem == "com.apple.sharing" AND \
@@ -60,74 +64,186 @@ final class SharingdLogStreamer {
         ]
         process.standardOutput = pipe
         process.standardError = pipe
-
+        var transferID: String = ""
         pipe.fileHandleForReading.readabilityHandler = { logstream in
             let data = logstream.availableData
+            
             guard !data.isEmpty else { return }
             let text = String(decoding: data, as: UTF8.self).dropFirst()
             guard let newTextData = String(text).data(using: .utf8) else {
                 return
             }
+            
             guard let json = try? JSONSerialization.jsonObject(with: newTextData) as? [String: Any],
             let timestamp  = json["timestamp"]  as? String,
 //                          let subsystem  = json["subsystem"]  as? String,
-//                          let category   = json["category"]   as? String,
+                          let category   = json["category"]   as? String,
                           let message    = json["eventMessage"] as? String
             else {
                 return
             }
 //            print("******\(message)******")
 //            //receiving
-//            if message.contains("Sender") {
-//                print("SENDER")
-//                print(message)
-//                //get Nm "sender name"
-//                //get Md "sender device"
-//                //get files count
-//                //
-//            }
-//            if message.contains("importedURLs") {
-//                print("importedURLs")
-//                print(message)
-//                
-//                //importedURLs - file sent
-//                
-//            }
-//            if message.contains("Receive transfers updates in daemon") {
+            
+//            if message.contains("Sender ") {
+            if message.contains("Message id: "){
+                print("RECEIVING")
+//                do {
+                    print(timestamp)
+                    var regex = /Nm\s+"([^"]+)"/
+
+                    if let match = message.firstMatch(of: regex) {
+                        let senderName = String(match.1)
+                        print(senderName)
+                    }
+                
+                regex = /Md\s+([^,]+),/
+                if let match = message.firstMatch(of: regex) {
+                    let senderDevice = String(match.1)
+                    print(senderDevice)
+                }
+                
+                regex = /transferID:\s+([^,]+)\),/
+                if let match = message.firstMatch(of: regex) {
+                    transferID = String(match.1)
+                    print(transferID)
+                }
+                regex = /files.count:\s+([^,]+),/
+                if let match = message.firstMatch(of: regex) {
+                    let filesCount = String(match.1)
+                    print(filesCount)
+                }
+               
+                regex = /Sender\s+([^,]+),/
+                if let match = message.firstMatch(of: regex) {
+                    let senderDeviceID = String(match.1)
+                    print(senderDeviceID)
+                }
+                
+            }
+            if message.contains("was cancelled.") {
+                let regex = /Transfer ([A-F0-9]+)/
+                if let match = message.firstMatch(of: regex) {
+                    let canceledTransferID = String(match.1)
+                    if canceledTransferID == transferID {
+                        print("\(transferID) Canceled")
+                    }
+                    
+                }
+            }
+            
+            if category == "AirDrop.\(transferID)" {
+                
+                let regex = /\[.*?\]/
+                if let match = message.firstMatch(of: regex) {
+                    let fileList = String(match.0)
+                    
+                    let files = fileList.split(separator: ", ")
+                    for file in files {
+                        if let url = URL(string: String(file)) {
+                            print(url.path())
+                        }
+                    }
+                }
+            }
+        
+            if message.contains("Receive transfers updates in daemon") {
 //                print("receive transfers updates in daemon")
 //                print(message)
 //                //state: .completedSuccessfully({time: 12sec})
 //                //startDate: 2026-03-31 20:16:03 +0000,
-//                
-//            }
-            //sending
-            if message.contains("Adding file items") {
-//                Adding file items (count=2) to request: [file:///var/folders/ds/kv3wyvln7kd0bpdz182np45c0000gn/T/TemporaryItems/NSIRD_Finder_2AVmOx/IMG_0581.PNG, file:///var/folders/ds/kv3wyvln7kd0bpdz182np45c0000gn/T/TemporaryItems/NSIRD_Finder_8DGQux/IMG_0581%202.PNG]
+                
+//                    let timeStamp = try Regex("(?<=startDate: ).*?(?=, )").firstMatch(in: message)
+                    var regex = /\[([^:]+):/
+                    if let match = message.firstMatch(of: regex) {
+                        let receiveTransferID = String(match.0).dropFirst().dropLast()
+                        
+                        if receiveTransferID == transferID {
+//                            regex = /startDate:\s+([^,]+),/
+//                            if let match = message.firstMatch(of: regex) {
+//                                let timeStamp = String(match.1)
+//                                print(timeStamp)
+//                            }
+                            regex = /time:\s+([^,]+)}/
+                            if let match = message.firstMatch(of: regex) {
+                                let timeItTook = String(match.1)
+                                print(timeItTook)
+                                print("Completed")
+                            }
+                        }
+                    }
 
+                    
+                    
                 
-                
-                print("Adding file items")
-                let files = message.split(separator: ": ")[1].split(separator: ", ")
-                print(files)
-                //file count
-                //file name
+               
             }
-//            if message.contains("Received ASK response") {
-//                print("Recived ASK response")
-//                print(message)
-//                //Nm "device nmae"
-//                //Md "device type"
-//                print(timestamp)
-//                //start time
-//                
-//            }
-//            if message.contains("SDAirDropSendService.transfers") {
-//                print("SD AirDrop Send Service Transfers")
-//                print(message)
-//                //.completedSuccessfully(metrics: {C11A1F5C, time: 14sec}
-//            }
+            //sending
             
+            if message.contains("Send StateMachine START") {
+                print("SENDING")
+                var regex = /T+\s(.*.)\s+{/
+                if let match = message.firstMatch(of: regex) {
+                    transferID = String(match.1)
+                    print(transferID)
+                }
+                
+                 regex = /Nm\s+"([^"]+)"/
+
+                if let match = message.firstMatch(of: regex) {
+                    let receiverName = String(match.1)
+                    print(receiverName)
+                }
             
+                regex = /Md\s+([^,]+),/
+                if let match = message.firstMatch(of: regex) {
+                    let receiverDevice = String(match.1)
+                    print(receiverDevice)
+                }
+                
+                regex = /ID\s+([^,]+)\s+CID/
+                if let match = message.firstMatch(of: regex) {
+                    let deviceID = String(match.1)
+                    print(deviceID)
+                }
+                
+            }
+            if message.contains("Adding file items") {
+                var regex = /\(count=([0-9])+\)/
+                if let match = message.firstMatch(of: regex) {
+                    let fileCount = String(match.1)
+                    print("file count: \(fileCount)")
+                }
+                regex = /\[([^\]]+)\]/
+                if let match = message.firstMatch(of: regex) {
+                    let fileList = String(match.1)
+                    let files = fileList.split(separator: ", ")
+                    for file in files {
+                        if let url = URL(string: String(file)) {
+                            print(url.path())
+                        }
+                    }
+                }
+                
+            }
+            
+            if message.contains("SDAirDropSendService.transfers") && message.contains("completedSuccessfully"){                
+                var regex = /id:\s+([^:]+),/
+                
+                if let match = message.firstMatch(of: regex) {
+                    let receiveTransferID = String(match.1)
+                    print(receiveTransferID)
+                    if receiveTransferID == transferID {
+                        regex = /time:\s(.*?)}/
+                        if let match = message.firstMatch(of: regex) {
+                            let timeItTook = String(match.1)
+                            print(timeItTook)
+                            print("Completed")
+                        }
+                    }
+                }
+            }
+
         }
 
         try process.run()

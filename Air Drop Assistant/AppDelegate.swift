@@ -211,14 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
-            if arguments[1] == "--log" {
-                do {
-                    try SharingdLogStreamer().start()
-                    print("log starting?")
-                } catch {
-                    print("Problemo log streaming")
-                }
-            }
+           
             // Register the login item agent (and ensure only one ADA instance runs)
             if arguments[1] == "--register" {
                 let ADAPids = NSRunningApplication.runningApplications(withBundleIdentifier: "com.ttinc.Air-Drop-Assistant")
@@ -249,7 +242,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
                 
             }
-//            NSApp.terminate(nil)
+#if !DEBUG
+            NSApp.terminate(nil)
+#endif
         }
         // Ensure only a single instance of the app is running
         if isAppAlreadyRunning() {
@@ -375,6 +370,11 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
             guard let menuCount = adaMenu.menu?.items.count else { return }
             adaMenu.menu?.insertItem(quit, at: menuCount)
+            do {
+                try SharingdLogStreamer().start()
+            } catch {
+                print("logging failed")
+            }
             prefWatcher.startMonitoring()
         }
         

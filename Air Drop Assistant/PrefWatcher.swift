@@ -60,6 +60,8 @@ class PrefWatcher {
     func startMonitoring() {
         
         do {
+            
+            
             // Open an event-only file descriptor to observe changes
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
             
