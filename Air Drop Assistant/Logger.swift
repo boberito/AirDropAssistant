@@ -20,4 +20,6 @@ extension Logger {
     static let updater = Logger(subsystem: subsystem, category: "updater")
     /// Logs general app lifecycle and user actions
     static let general = Logger(subsystem: subsystem, category: "general")
+    
+    static let airdroplogger = Logger(subsystem: subsystem, category: "airdrop_logging")
 }

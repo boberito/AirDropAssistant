@@ -83,7 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             prefWatcher.resetDiscoverableMode()
         }
     }
-    
+    let logStreamer = SharingdLogStreamer()
     /// Shared notification center used to request authorization and deliver local notifications.
     let nc = UNUserNotificationCenter.current()
     // MARK: - Menu Updates
@@ -371,7 +371,10 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             guard let menuCount = adaMenu.menu?.items.count else { return }
             adaMenu.menu?.insertItem(quit, at: menuCount)
             do {
-                try SharingdLogStreamer().start()
+//                try SharingdLogStreamer().start()
+                if logStreamer.checkProfileStatus()  {
+                    try logStreamer.start()
+                }
             } catch {
                 print("logging failed")
             }
@@ -473,6 +476,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     /// Quits the application.
     @objc func QuitApp() {
+        logStreamer.stop()
         exit(0)
     }
     /// Presents the Preferences window (centers on screen, reuses existing window if open).
@@ -504,6 +508,9 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     /// Placeholder for any cleanup needed when the app is terminating.
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
+        if logStreamer.checkStatus() {
+            logStreamer.stop()
+        }
     }
     
     /// Opt-in to secure state restoration on newer macOS versions.
