@@ -2,7 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/boberito/sc-menu-test/main/appcast.xml</string>
 	<key>LSMultipleInstancesProhibited</key>
 	<false/>
+	<key>SUPublicEDKey</key>
+	<string>ZME/ljVgiuE3yevDwqNL5kK3hPRVzZLRZnc3Ihz9gl8=</string>
 </dict>
 </plist>

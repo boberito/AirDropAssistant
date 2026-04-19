@@ -158,7 +158,7 @@ class PrefWatcher {
             task.launchPath = "/bin/bash"
             // Poll for active AirDrop file activity to avoid interrupting transfers
             let command = """
-        /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $9 !~ /AirDropHashDB|\\.plist|\\.loctable|\\.car|\\/System/' | /usr/bin/tail -1
+        /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $0 !~ /Group Containers|AirDropHashDB/'
         """
             task.arguments = ["-c", command]
             let pipe = Pipe()

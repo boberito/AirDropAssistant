@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		730E828E2F945AE0000480A2 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 730E828D2F945AE0000480A2 /* Sparkle */; };
 		7318DA982C8F710D004F262A /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7318DA972C8F710D004F262A /* UpdateCheck.swift */; };
 		732889762CBCABBB00234AA2 /* ADA_PF_Helper_Script.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 735DA8122CB8C2E3000F9D71 /* ADA_PF_Helper_Script.sh */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7328CDA52C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7328CDA42C8BA87B0042A517 /* com.ttinc.Air-Drop-Assistant.plist */; };
@@ -68,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				730E828E2F945AE0000480A2 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,6 +159,9 @@
 				Base,
 			);
 			mainGroup = 73FFDCEE2C70210B00244D57;
+			packageReferences = (
+				730E828C2F945AE0000480A2 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = 73FFDCF82C70210B00244D57 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -344,7 +349,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 234;
+				CURRENT_PROJECT_VERSION = 233;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -380,7 +385,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 234;
+				CURRENT_PROJECT_VERSION = 233;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -427,6 +432,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		730E828C2F945AE0000480A2 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		730E828D2F945AE0000480A2 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 730E828C2F945AE0000480A2 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 73FFDCEF2C70210B00244D57 /* Project object */;
 }

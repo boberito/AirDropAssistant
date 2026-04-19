@@ -9,6 +9,7 @@ import Cocoa
 import UserNotifications
 import ServiceManagement
 import OSLog
+import Sparkle
 
 // MARK: - AppDelegate Overview
 // This file contains the main application delegate for Air Drop Assistant.
@@ -184,6 +185,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let observer = AppPreferencesObserver()
     // MARK: - App Lifecycle
     /// Prevents showing a Dock/window when reopened; keep the app as a menu bar accessory.
+    ///
+    private lazy var updaterController: SPUStandardUpdaterController = {
+           SPUStandardUpdaterController(
+               startingUpdater: true,
+               updaterDelegate: nil,
+               userDriverDelegate: nil
+           )
+       }()
+    
+    @IBAction func checkForUpdates(_ sender: Any?) {
+            updaterController.checkForUpdates(sender)
+        }
+    
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         NSApp.setActivationPolicy(.accessory)
         return false
@@ -333,9 +347,10 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
                 Logger.general.info("Updates disabled")
             } else {
-                Task {
-                    await updater.check()
-                }
+                updaterController.updater.checkForUpdatesInBackground()
+//                Task {
+//                    await updater.check()
+//                }
             }
             // Build the initial status bar menu with dynamic items and actions
             adaMenu.menu = NSMenu()
@@ -528,11 +543,13 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     /// Manually trigger an asynchronous update check (from the menu item).
     @objc func updateCheckFunc (){
-        Task {
+//        Task {
 
-            await updater.check()
+//            await updater.check()
+//           updaterController.updater.checkForUpdatesInBackground()
+        self.checkForUpdates(nil)
             
-        }
+//        }
     }
     /// Detects whether AirDrop is disabled by system/MDM configuration profiles by checking
     /// com.apple.NetworkBrowser and com.apple.applicationaccess preferences.
