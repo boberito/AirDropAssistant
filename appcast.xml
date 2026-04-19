@@ -22,7 +22,7 @@
             <sparkle:version>235</sparkle:version>
             <sparkle:shortVersionString>1.6</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/boberito/sc-menu-test/releases/download/1.6/AirDropAssistant.dmg" length="2563288" type="application/x-apple-diskimage" sparkle:edSignature="NHrXPDTlx9E28qSel2RwkSSQF9WI/FOhSqoz48t/24vfvCIumnH7RAgwSBT6CehyVJpSx6QO4mkQaHDC11O7BQ=="/>      
+            <enclosure url="https://github.com/boberito/AirDropAssistant/releases/download/1.6/AirDropAssistant.dmg" length="2563288" type="application/x-apple-diskimage" sparkle:edSignature="NHrXPDTlx9E28qSel2RwkSSQF9WI/FOhSqoz48t/24vfvCIumnH7RAgwSBT6CehyVJpSx6QO4mkQaHDC11O7BQ=="/>      
     </item>    
 
   </channel>
