@@ -133,3 +133,59 @@ To configuration notifications you'll want to create a `com.apple.notificationse
 <key>ShowInNotificationCenter</key>
 	<true/>
 ```
+
+In order to enable logging of AirDrop transfers, install a configuration profile that enables private logging for sharingd.
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadDisplayName</key>
+      <string>sharingd AirDrop logging</string>
+      <key>PayloadEnabled</key>
+      <true/>
+      <key>PayloadIdentifier</key>
+      <string>com.apple.logging.sharingd.airdrop.1</string>
+      <key>PayloadType</key>
+      <string>com.apple.system.logging</string>
+      <key>PayloadUUID</key>
+      <string>AA1DD999-J4FC-781W-BA99-345T45TYU891</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>Subsystems</key>
+      <dict>
+                <key>com.apple.sharing</key>
+                <dict>
+                    <key>DEFAULT-OPTIONS</key>
+                    <dict>
+                        <key>Enable-Private-Data</key>
+                        <true/>
+                    </dict>
+                </dict>
+            </dict>
+    </dict>
+  </array>
+  <key>PayloadDescription</key>
+  <string>Enable Private Log Data for sharingd AirDrop categories</string>
+  <key>PayloadDisplayName</key>
+  <string>sharingd AirDrop Private Log Data</string>
+  <key>PayloadIdentifier</key>
+  <string>com.apple.logging.sharingd.airdrop</string>
+  <key>PayloadOrganization</key>
+  <string></string>
+  <key>PayloadRemovalDisallowed</key>
+  <false/>
+  <key>PayloadScope</key>
+  <string>System</string>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadUUID</key>
+  <string>A38C72AH-B1C2-84I8-880R-83JK75LDD173</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+</dict>
+</plist>
+```
