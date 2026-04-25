@@ -9,32 +9,63 @@ import Foundation
 import RegexBuilder
 import OSLog
 
-struct AirDropEvent: Codable {
-    let direction: String
-    let transferID: String
-    let status: String
-    let timestamp: String
-    let time: String
-    let fileCount: String
-    let files: [String]
+/// AirDropLogging
+///
+/// Streams `sharingd` logs via `/usr/bin/log stream` with a predicate focused on AirDrop-related
+/// messages, incrementally parses them with RegexBuilder, and writes summarized AirDrop events
+/// as JSON lines to `~/Library/Logs/ADA.json`.
+///
+/// The parser supports both incoming and outgoing transfers and captures:
+/// - Direction (incoming/outgoing)
+/// - Transfer ID
+/// - Status (completedSuccessfully / Cancelled)
+/// - Timestamp and elapsed time
+/// - File count and file paths
+/// - Peer details (sender/receiver IDs, names, devices)
 
-    // Outgoing
+/// A codable representation of a summarized AirDrop event written to the log file.
+/// Note: Not every field is present for every direction. Optional peer details
+/// are populated when available from the parsed logs.
+struct AirDropEvent: Codable {
+    let direction: String          // "incoming" or "outgoing"
+    let transferID: String         // Unique transfer identifier observed in logs
+    let status: String             // e.g., "completedSuccessfully" or "Cancelled"
+    let timestamp: String          // Log timestamp when we first observed the transfer
+    let time: String               // Elapsed time reported by sharingd for the transfer
+    let fileCount: String          // Number of files involved in the transfer (string as parsed)
+    let files: [String]            // Decoded file paths for items in the transfer
+
+    // Outgoing-only peer details (destination)
     let receiverID: String?
     let receiverName: String?
     let receiverDevice: String?
 
-    // Incoming
+    // Incoming-only peer details (source)
     let senderDeviceID: String?
     let senderName: String?
     let senderDevice: String?
 }
 
+/// Streams and parses AirDrop-related logs from `sharingd` and writes summarized JSON lines.
+///
+/// Usage:
+///   let streamer = SharingdLogStreamer(); try streamer.start()
+///   ... later ... streamer.stop()
 class SharingdLogStreamer {
+    // Backing process for `/usr/bin/log stream`
     private let process = Process()
+    // Pipe to capture both stdout and stderr of `log stream`
     private let pipe = Pipe()
     
+    /// Launches `/usr/bin/log stream` with a predicate targeting AirDrop logs and begins
+    /// incremental parsing of JSON events. Emits one JSON line per completed/cancelled
+    /// transfer to `~/Library/Logs/ADA.json`.
     func start() throws {
         process.executableURL = URL(fileURLWithPath: "/usr/bin/log")
+        
+        // Predicate targets sharingd AirDrop logs across categories used by network and client
+        // components. Event message filters focus on messages that carry enough structure to
+        // reconstruct a transfer lifecycle (start, files, completion, cancellation).
         let predicate = """
             process == "sharingd" AND \
             subsystem == "com.apple.sharing" AND \
@@ -50,6 +81,7 @@ class SharingdLogStreamer {
               eventMessage CONTAINS " was cancelled."
             """
         
+        // Use JSON style for easier parsing and filter by process to reduce noise.
         process.arguments = [
             "stream",
             "--style", "json",
@@ -59,11 +91,16 @@ class SharingdLogStreamer {
         ]
         process.standardOutput = pipe
         process.standardError = pipe
+        
+        // State accumulated across related log lines for a single transfer
+        // (sharingd emits details over multiple messages).
         var transferID: String = ""
         var receiverName: String = ""
         var sendStateMessage = ""
         var airDropLogDict = [String: Any]()
         var fileArray: [String] = []
+        
+        // Parse each JSON line emitted by `log stream` as it arrives.
         pipe.fileHandleForReading.readabilityHandler = { logstream in
             let data = logstream.availableData
             
@@ -79,33 +116,45 @@ class SharingdLogStreamer {
             else {
                 return
             }
+            
+            // Begin parsing known message shapes. We gate by substrings to avoid expensive
+            // regex work on unrelated messages.
+            
             if message.contains("Message id: "){
+                // Incoming transfer announcement with sender metadata and initial counts.
                 
                 airDropLogDict = ["direction": "incoming"]
                 airDropLogDict["timestamp"] = timestamp
                 
+                // Sender display name: Nm "<name>"
                 var regex = /Nm\s+"([^"]+)"/
-                
                 if let match = message.firstMatch(of: regex) {
                     let senderName = String(match.1)
                     airDropLogDict["senderName"] = senderName
                 }
                 
+                // Sender device model: Md <model>,
                 regex = /Md\s+([^,]+),/
                 if let match = message.firstMatch(of: regex) {
                     let senderDevice = String(match.1)
                     airDropLogDict["senderDevice"] = senderDevice
                 }
+                
+                // Sender device ID: Sender <id>,
                 regex = /Sender\s+([^,]+),/
                 if let match = message.firstMatch(of: regex) {
                     let senderDeviceID = String(match.1)
                     airDropLogDict["senderDeviceID"] = senderDeviceID
                 }
+                
+                // Transfer ID: transferID: <id>),
                 regex = /transferID:\s+([^,]+)\),/
                 if let match = message.firstMatch(of: regex) {
                     transferID = String(match.1)
                     airDropLogDict["transferID"] = transferID
                 }
+                
+                // File count: files.count: <n>,
                 regex = /files.count:\s+([^,]+),/
                 if let match = message.firstMatch(of: regex) {
                     let filesCount = String(match.1)
@@ -113,6 +162,7 @@ class SharingdLogStreamer {
                 }
                 
             }
+            // Incoming cancellation message; flush accumulated state if IDs match.
             if message.contains("was cancelled.") {
                 let regex = /Transfer ([A-F0-9]+)/
                 if let match = message.firstMatch(of: regex) {
@@ -134,6 +184,7 @@ class SharingdLogStreamer {
                     
                 }
             }
+            // Capture sandbox-issued file URL and decode to a filesystem path.
             if message.contains("Issued sandbox token for url") {
                 let regex = /url+\s(.*)/
                 if let match = message.firstMatch(of: regex) {
@@ -147,7 +198,7 @@ class SharingdLogStreamer {
                 
             }
             
-            
+            // Incoming completion update with elapsed time.
             if message.contains("Receive transfers updates in daemon") {
                 var regex = /\[([^:]+):/
                 if let match = message.firstMatch(of: regex) {
@@ -175,6 +226,7 @@ class SharingdLogStreamer {
                 }
             }
             
+            // Outgoing transfer start; extract transfer ID and hold the full message for later parsing.
             if message.contains("Send StateMachine START") {
                 airDropLogDict = ["direction": "outgoing"]
                 airDropLogDict["timestamp"] = timestamp
@@ -187,6 +239,7 @@ class SharingdLogStreamer {
                 
             }
             
+            // Outgoing ASK response includes receiver name; use it to extract device and ID from the saved start message.
             if message.contains("Received ASK response") {
                 
                 let regex = /Nm\s+"([^"]+)"/
@@ -194,7 +247,7 @@ class SharingdLogStreamer {
                     receiverName = String(match.1)
                     airDropLogDict["receiverName"] = receiverName
                     
-                    
+                    // Build a regex to capture the receiver device UUID following the name.
                     var builtRegex = Regex {
                         "Nm "
                         receiverName
@@ -220,6 +273,7 @@ class SharingdLogStreamer {
                     let receiverID = sendStateMessage.firstMatch(of: builtRegex)?.output.1.map(String.init).joined()
                     airDropLogDict["receiverID"] = receiverID
                     
+                    // Build a regex to capture the receiver device model (Md ...).
                     builtRegex = Regex {
                         "Nm "
                         receiverName
@@ -238,6 +292,7 @@ class SharingdLogStreamer {
                 
             }
             
+            // Some devices respond with nil ID initially; parse a later message variant to get the device ID.
             if let name = airDropLogDict["receiverName"] as? String {
                 
                 if message.contains("Nm \(name) Md nil ID ") {
@@ -248,6 +303,7 @@ class SharingdLogStreamer {
                     }
                 }
             }
+            // Outgoing: parse file count and the bracketed list of file URLs.
             if message.contains("Adding file items") {
                 var regex = /\(count=([0-9])+\)/
                 if let match = message.firstMatch(of: regex) {
@@ -274,6 +330,7 @@ class SharingdLogStreamer {
                 
             }
             
+            // Outgoing completion with elapsed time; flush summary.
             if message.contains("SDAirDropSendService.transfers") && message.contains("completedSuccessfully"){
                 var regex = /id:\s+([^:]+),/
                 if let match = message.firstMatch(of: regex) {
@@ -297,6 +354,7 @@ class SharingdLogStreamer {
                 }
             }
             
+            // Outgoing cancellation; flush summary.
             if message.contains("Canceling send transfer") {
                 let regex = /transfer ([A-F0-9]+)/
                 if let match = message.firstMatch(of: regex) {
@@ -317,21 +375,28 @@ class SharingdLogStreamer {
             }
             
         }
+        // Start streaming after the handler is set to avoid losing early lines.
         Logger.airdroplogger.info("AirDrop Logging started")
         try process.run()
     }
+    
+    /// Terminates the underlying `log stream` process.
     func stop() {
         process.terminate()
         Logger.airdroplogger.info("AirDrop Logging stopped")
     }
     
+    /// Returns true while the streaming process is running.
     func checkStatus() -> Bool {
         return process.isRunning
     }
     
+    /// Checks whether a logging configuration profile forces private data for `com.apple.sharing`.
+    /// Returns true if the profile enables private data, which is necessary for full AirDrop parsing.
     func checkProfileStatus() -> Bool {
         let domain = "com.apple.system.logging"
         let bundle_plist = UserDefaults.init(suiteName: domain)
+        // Inspect the managed preferences domain to see if Subsystems -> com.apple.sharing -> DEFAULT-OPTIONS -> Enable-Private-Data == 1
         if CFPreferencesAppValueIsForced("Subsystems" as CFString, domain as CFString) {
             if let preference_value = bundle_plist?.value(forKey: "Subsystems"), let sharing_subsystem = preference_value as? [String: AnyObject], let sharing_subsystem_value = sharing_subsystem["com.apple.sharing"] as? [String: AnyObject], let enable_private_data = sharing_subsystem_value["DEFAULT-OPTIONS"] as? [String: Int], let enable_private_data_value = enable_private_data["Enable-Private-Data"] {
                 if enable_private_data_value == 1 {
@@ -343,23 +408,27 @@ class SharingdLogStreamer {
         return false
     }
     
+    /// Appends a single JSON line representing an AirDrop event to `~/Library/Logs/ADA.json`.
+    /// Creates the file if it does not exist.
     func writeLogs(log: [String: Any]) throws -> Void{
+        // Persist to the user's Library/Logs as ADA.json (JSON Lines format).
         let logURL = URL.libraryDirectory.appending(components: "Logs", "ADA.json")
 
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .sortedKeys
+        // Use JSONSerialization since the input is a heterogenous [String: Any] dictionary.
         let data = try JSONSerialization.data(withJSONObject: log)
 
-            guard var line = String(data: data, encoding: .utf8) else { return }
-            line += "\n"
+        guard var line = String(data: data, encoding: .utf8) else { return }
+        line += "\n"
 
-            if FileManager.default.fileExists(atPath: logURL.path) {
-                let handle = try FileHandle(forWritingTo: logURL)
-                handle.seekToEndOfFile()
-                handle.write(line.data(using: .utf8)!)
-                try handle.close()
-            } else {
-                try line.data(using: .utf8)?.write(to: logURL, options: .atomic)
-            }
+        // Append if the file exists; otherwise create a new file atomically.
+        if FileManager.default.fileExists(atPath: logURL.path) {
+            let handle = try FileHandle(forWritingTo: logURL)
+            handle.seekToEndOfFile()
+            handle.write(line.data(using: .utf8)!)
+            try handle.close()
+        } else {
+            try line.data(using: .utf8)?.write(to: logURL, options: .atomic)
+        }
     }
 }
+

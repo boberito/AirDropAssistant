@@ -22,8 +22,7 @@ import Sparkle
 
 /// Main application delegate that coordinates app lifecycle, menu management,
 /// preference observation, AirDrop enforcement, and update checks.
-@NSApplicationMain
-
+@main
 class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataModelDelegate, AppPrefObserverDelegate {
     // MARK: - Preference Change Handling
     /// Called when any observed preference changes. Rebuilds the status bar icon and menu

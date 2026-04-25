@@ -13,7 +13,7 @@ import OSLog
 
 /// Convenience categories bound to the app's bundle identifier.
 extension Logger {
-    private static var subsystem = Bundle.main.bundleIdentifier!
+    private static let subsystem = Bundle.main.bundleIdentifier!
     /// Logs AirDrop status changes and enforcement activity
     static let airdropstatus = Logger(subsystem: subsystem, category: "airdrop_status")
     /// Logs update check flow and results
