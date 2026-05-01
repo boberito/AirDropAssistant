@@ -49,6 +49,8 @@ class PrefWatcher {
     var eventStream: FSEventStreamRef?
     /// Dispatch source for low-level file change events
     var source: DispatchSourceFileSystemObject?
+    /// Pending delayed reset, if one has been scheduled.
+    var resetTask: Task<Void, Never>?
     /// Backed UserDefaults domain for sharingd
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
     /// Full path to com.apple.sharingd.plist under the current user's Library/Preferences
@@ -58,56 +60,53 @@ class PrefWatcher {
     /// Starts monitoring the preferences file for rename/delete, which indicates a write.
     /// Re-establishes the watch as needed when the file is rotated.
     func startMonitoring() {
-        
+        if source != nil {
+            return
+        }
+
         do {
-            
-            
             // Open an event-only file descriptor to observe changes
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
             
             // Create a DispatchSource for all file system events on the descriptor
-            source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
-            source?.setEventHandler {
-                let event = self.source?.data
+            let newSource = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
+            source = newSource
+            newSource.setEventHandler { [weak self] in
+                guard let self else { return }
+                let event = newSource.data
                 
-                if let eventStrings = self.source?.dataStrings {
-                    Logger.airdropstatus.info("\(self.filePath) File system event: \(eventStrings.joined(separator: ", "))")
-                    
-                }
+                Logger.airdropstatus.info("\(self.filePath) File system event: \(newSource.dataStrings.joined(separator: ", "))")
                 
                 // File was rotated/replaced, treat as a write and reconfigure monitoring
-                if event?.contains(.delete) == true || event?.contains(.rename) == true {
-                    do {
-                        // Close the existing file descriptor
-                        try fdesc.close()
-                        
-                        // Stop the current dispatch source
-                        self.source?.cancel()
-                        self.source = nil
-                        
-                        // Notify delegate with the new AirDrop status
-                        if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
+                if event.contains(.delete) || event.contains(.rename) {
+                    self.stopMonitoring()
+                    
+                    // Notify delegate with the new AirDrop status
+                    if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
+                        DispatchQueue.main.async {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
-                            Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                         }
-                        
-                        // Schedule enforcement back to the desired setting
-                        Task {
-                            await self.resetAirDrop()
-                        }
-                    } catch {
-                        Logger.airdropstatus.error("\(error.localizedDescription)")
+                        Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                     }
+                    
+                    // Schedule enforcement back to the desired setting
+                    Task {
+                        await self.resetAirDrop()
+                    }
+                    
+                    self.startMonitoring()
                 }
             }
             
-            // Re-arm monitoring after cancelation
-            source?.setCancelHandler {
-                
-                self.startMonitoring()
+            newSource.setCancelHandler {
+                do {
+                    try fdesc.close()
+                } catch {
+                    Logger.airdropstatus.error("\(error.localizedDescription)")
+                }
             }
             
-            source?.resume()
+            newSource.resume()
             
         } catch {
             Logger.airdropstatus.error("\(error.localizedDescription)")
@@ -120,6 +119,8 @@ class PrefWatcher {
     func resetAirDrop() async {
         // No enforcement needed if already compliant or Off
         if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
+            resetTask?.cancel()
+            resetTask = nil
             return
             
         } else {
@@ -134,21 +135,37 @@ class PrefWatcher {
             let tolerance: Duration = .seconds(0.5)
             
             // Sleep until the desired time using ContinuousClock, then enforce
-            Task {
-                try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
-                self.resetDiscoverableMode()
+            resetTask?.cancel()
+            resetTask = Task { [weak self] in
+                do {
+                    try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
+                    guard !Task.isCancelled else { return }
+                    guard let self else { return }
+                    if self.domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || self.domain!.string(forKey: "DiscoverableMode") == "Off" {
+                        self.resetTask = nil
+                        return
+                    }
+                    self.resetDiscoverableMode()
+                } catch {
+                    return
+                }
             }
         }
+    }
+    
+    func stopMonitoring() {
+        source?.cancel()
+        source = nil
     }
     /// Immediately enforce the desired DiscoverableMode, wait for AirDrop activity to finish,
     /// restart sharingd to apply, optionally post a notification, and re-arm monitoring.
     func resetDiscoverableMode() {
-        
+        guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
+        resetTask = nil
+        stopMonitoring()
         // Pause monitoring while we mutate the file
-        source?.cancel()
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
-        guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
         // Set the desired AirDrop mode
         domain?.set(ADASetting, forKey: "DiscoverableMode")
         Logger.airdropstatus.info("Airdrop Status changed by ADA to \(ADASetting)")
@@ -201,8 +218,15 @@ class PrefWatcher {
                 content.title = "AirDrop Status Changed"
                 content.body = ADASetting
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-                
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                let notificationID = "airdrop-status-changed"
+                nc.removePendingNotificationRequests(withIdentifiers: [notificationID])
+                nc.removeDeliveredNotifications(withIdentifiers: [notificationID])
+
+                let request = UNNotificationRequest(
+                    identifier: notificationID,
+                    content: content,
+                    trigger: trigger
+                )
                 try await nc.add(request)
             }
         }
@@ -212,4 +236,3 @@ class PrefWatcher {
         
     }
 }
-

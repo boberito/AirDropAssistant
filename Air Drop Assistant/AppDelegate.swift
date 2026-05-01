@@ -28,49 +28,60 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     /// Called when any observed preference changes. Rebuilds the status bar icon and menu
     /// to reflect current policy and user defaults (e.g., hidden icon, updates disabled).
     func newPreferenceValue() {
-        menuIcon()
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.newPreferenceValue()
+            }
+            return
+        }
         
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
         let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
         
         if hideMenuIconValue && isForced {
-            adaMenu.menu?.removeAllItems()
-            NSStatusBar.system.removeStatusItem(adaMenu)
+            if isStatusItemVisible {
+                adaMenu.menu?.removeAllItems()
+                NSStatusBar.system.removeStatusItem(adaMenu)
+                isStatusItemVisible = false
+            }
         } else {
+            if !isStatusItemVisible {
                 adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-                
-                adaMenu.menu = NSMenu()
-                
-                menuIcon()
-                
-                adaMenuListing()
-                let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
-                let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
-                
-                var IncreaseByOne: Int = 0
-                if let menuItems = adaMenu.menu {
-                    for item in menuItems.items {
-                        
-                        if item.title == "AirDrop: Incoming Only"{
-                            IncreaseByOne += 1
-                        }
-                        if  item.title == "AirDrop: Outgoing Only" {
-                            IncreaseByOne += 1
-                        }
+                isStatusItemVisible = true
+            }
+                  
+            adaMenu.menu = NSMenu()
+                  
+            menuIcon()
+                  
+            adaMenuListing()
+            let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
+            let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
+                  
+            var IncreaseByOne: Int = 0
+            if let menuItems = adaMenu.menu {
+                for item in menuItems.items {
+                          
+                    if item.title == "AirDrop: Incoming Only"{
+                        IncreaseByOne += 1
+                    }
+                    if  item.title == "AirDrop: Outgoing Only" {
+                        IncreaseByOne += 1
                     }
                 }
-                
-                adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
+            }
+                  
+            adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
             let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
                 Logger.general.info("Updates disabled, not adding the update menu")
             } else {
                 adaMenu.menu?.insertItem(softwareUpdate, at: 2 + IncreaseByOne)
             }
-                let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
+            let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
             guard let menuCount = adaMenu.menu?.items.count else { return }
-                adaMenu.menu?.insertItem(quit, at: menuCount)
+            adaMenu.menu?.insertItem(quit, at: menuCount)
         }
     }
     
@@ -90,8 +101,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     /// Responds to preference file changes by rebuilding the menu items and preserving
     /// the correct ordering of dynamic items (e.g., Incoming/Outgoing only indicators).
     func didReceiveDataUpdate(airDropStatus: String) {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.didReceiveDataUpdate(airDropStatus: airDropStatus)
+            }
+            return
+        }
+
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
-        if hideMenuIconValue {
+        let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
+        if hideMenuIconValue && isForced {
            return
         }
         self.adaMenu.menu?.removeAllItems()
@@ -116,7 +136,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         
         self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
         
-        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
             Logger.general.info("Updates disabled, not adding the update menu")
@@ -131,6 +150,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     /// Refreshes the PF (packet filter) status indicator in the menu after the helper
     /// script updates firewall rules for AirDrop direction restrictions.
     func updatePF() {
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.updatePF()
+            }
+            return
+        }
+        
+        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
+        let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
+        let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
+        if hideMenuIconValue && isForced {
+            return
+        }
         
         self.adaMenu.menu?.removeAllItems()
         self.adaMenu.menu = NSMenu()
@@ -153,7 +185,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         }
         
         self.adaMenu.menu?.insertItem(prefs, at: 1 + IncreaseByOne)
-        guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
         if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
             Logger.general.info("Updates disabled, not adding the update menu")
@@ -174,6 +205,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
     /// The status bar item shown in the menu bar. Hosts the Air Drop Assistant menu.
     var adaMenu = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    /// Tracks whether the status bar item is currently owned by NSStatusBar.
+    private var isStatusItemVisible = true
     /// Cached text for the current AirDrop status displayed in the menu.
     var airDropStatus = ""
     /// Monitors the sharingd preferences file for changes and triggers resets as needed.
@@ -339,8 +372,13 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
         
         if hideMenuIconValue && isForced {
+            if isStatusItemVisible {
+                NSStatusBar.system.removeStatusItem(adaMenu)
+                isStatusItemVisible = false
+            }
             prefWatcher.startMonitoring()
         } else {
+            isStatusItemVisible = true
             // Optionally perform update check if not disabled by managed preferences
             let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
@@ -457,27 +495,23 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         
         adaMenu.menu?.insertItem(airDropStatus, at: 0)
-        if (PFADAStatus != "" || PFADAStatus != "off") && airDropStatus.title != "Airdrop Status: Off" {
-            var status = String()
-            if PFADAStatus == "DisableOut" {
-                status = "AirDrop: Incoming Only"
-            }
-            if PFADAStatus == "DisableIn" {
-                status = "AirDrop: Outgoing Only"
-            }
-            if status != "" {
-                if let menuItems = adaMenu.menu {
-                    for item in menuItems.items {
-                        if item.title == "AirDrop: Incoming Only"{
-                            adaMenu.menu?.removeItem(at: 1)
-                        }
-                        if  item.title == "AirDrop: Outgoing Only" {
-                            adaMenu.menu?.removeItem(at: 1)
-                        }
-                    }
+        let pfStatus: String
+        switch PFADAStatus {
+        case "DisableOut":
+            pfStatus = "AirDrop: Incoming Only"
+        case "DisableIn":
+            pfStatus = "AirDrop: Outgoing Only"
+        default:
+            pfStatus = ""
+        }
+        
+        if !pfStatus.isEmpty {
+            if let menuItems = adaMenu.menu {
+                for item in menuItems.items where item.title == "AirDrop: Incoming Only" || item.title == "AirDrop: Outgoing Only" {
+                    adaMenu.menu?.removeItem(item)
                 }
-                adaMenu.menu?.insertItem(NSMenuItem(title: status, action: nil, keyEquivalent: ""), at: 1)
             }
+            adaMenu.menu?.insertItem(NSMenuItem(title: pfStatus, action: nil, keyEquivalent: ""), at: 1)
         }
         
     }
@@ -585,4 +619,3 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
     
 }
-

@@ -25,7 +25,7 @@ disableAirDropPF() {
     /usr/bin/sed -i '' '/load anchor "ada_anchor" from "\/etc\/pf.anchors\/ada_anchor"/d' /etc/pf.conf
     /sbin/pfctl -e 2> /dev/null
     /sbin/pfctl -f /etc/pf.conf 2> /dev/null
-    /bin/launchctl disable system/mscp.pfctl 2> /dev/null
+    /bin/launchctl disable system/ada.pfctl 2> /dev/null
     /bin/launchctl bootout system "/Library/LaunchDaemons/com.ttinc.Air-Drop-Assistant.pfctl.plist" 2> /dev/null
     /bin/rm -rf "/Library/LaunchDaemons/com.ttinc.Air-Drop-Assistant.pfctl.plist"
     /usr/bin/defaults write "/Library/Preferences/com.ttinc.Air-Drop-Assistant.plist" ADA_PF "off"
