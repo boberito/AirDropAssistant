@@ -211,8 +211,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     var airDropStatus = ""
     /// Monitors the sharingd preferences file for changes and triggers resets as needed.
     let prefWatcher = PrefWatcher()
-    /// Handles asynchronous GitHub release checks and user alerts for updates.
-    let updater = UpdateCheck()
     /// Observes app preferences (UserDefaults) using Combine and notifies this delegate on changes.
     let observer = AppPreferencesObserver()
     // MARK: - App Lifecycle
@@ -576,13 +574,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     /// Manually trigger an asynchronous update check (from the menu item).
     @objc func updateCheckFunc (){
-//        Task {
-
-//            await updater.check()
-//           updaterController.updater.checkForUpdatesInBackground()
         self.checkForUpdates(nil)
-            
-//        }
     }
     /// Detects whether AirDrop is disabled by system/MDM configuration profiles by checking
     /// com.apple.NetworkBrowser and com.apple.applicationaccess preferences.
