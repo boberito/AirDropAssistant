@@ -49,7 +49,6 @@ disableInComing() {
 if [[ $EUID -ne 0 ]]; then
     /usr/bin/logger "ADA: Prompting for Admin Privs"
     /usr/bin/logger "ADA: $0 $1"
-    # /usr/bin/osascript -e "do shell script \"$0 $1\" with administrator privileges"
     /usr/bin/osascript -e 'on run {commandName, commandArgument}' -e 'do shell script ((quoted form of commandName) & " " & (quoted form of commandArgument)) without altering line endings with administrator privileges with prompt "Air Drop Assistant would like permission to change system level settings."' -e 'end run' -- "$0" "$1"
     exit 0
 fi

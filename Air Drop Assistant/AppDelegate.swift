@@ -94,8 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             prefWatcher.resetDiscoverableMode()
         }
     }
-    let logStreamer = SharingdLogStreamer()
-    /// Shared notification center used to request authorization and deliver local notifications.
+    let logStreamer = SharingdLogStreamer() // Streams sharingd logs to detect AirDrop-related events (for PF/status updates)
+    /// Notification center used for authorization and delivering local notifications.
     let nc = UNUserNotificationCenter.current()
     // MARK: - Menu Updates
     /// Responds to preference file changes by rebuilding the menu items and preserving
@@ -196,6 +196,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
         guard let menuCount = adaMenu.menu?.items.count else { return }
         self.adaMenu.menu?.insertItem(quit, at: menuCount)
     }
+    /// Preferences delegate callback when icon appearance changes; updates status bar icon.
     /// Called by the Preferences UI when the icon mode changes. Updates the status bar icon.
     func didRecievePrefUpdate(iconMode: String) {
         self.menuIcon()
@@ -214,8 +215,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     /// Observes app preferences (UserDefaults) using Combine and notifies this delegate on changes.
     let observer = AppPreferencesObserver()
     // MARK: - App Lifecycle
-    /// Prevents showing a Dock/window when reopened; keep the app as a menu bar accessory.
-    ///
+    /// Sparkle updater controller for background and manual update checks.
     private lazy var updaterController: SPUStandardUpdaterController = {
            SPUStandardUpdaterController(
                startingUpdater: true,
@@ -224,10 +224,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
            )
        }()
     
+    /// IBAction wrapper used by menu to trigger Sparkle's update check.
     @IBAction func checkForUpdates(_ sender: Any?) {
-            updaterController.checkForUpdates(sender)
-        }
+        // Triggers Sparkle UI flow for update checking
+        updaterController.checkForUpdates(sender)
+    }
     
+    /// Keep app as accessory (no Dock/window) when user clicks the Dock icon.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         NSApp.setActivationPolicy(.accessory)
         return false
@@ -243,20 +246,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         Logger.general.info("ADA Launched")
         
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.setActivationPolicy(.accessory) // Run as menu bar accessory app (no Dock icon)
         
-        // Configure the launch agent used for Launch at Login and handle CLI arguments
+        // Login item agent used for Launch at Login
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+        // Handle CLI invocations (register/unregister login item)
         if CommandLine.arguments.count > 1 {
             
-            // If MDM disables AirDrop, exit early when running CLI operations
+            // Respect MDM policy even for CLI operations
             if airDropManagedDisabled() {
                 Logger.general.info("AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.")
                 NSApp.terminate(nil)
             }
             let arguments = CommandLine.arguments
            
-            // Register the login item agent (and ensure only one ADA instance runs)
+            // Register login item; ensure only one ADA instance is active
             if arguments[1] == "--register" {
                 let ADAPids = NSRunningApplication.runningApplications(withBundleIdentifier: "com.ttinc.Air-Drop-Assistant")
                 if ADAPids.count > 1 {
@@ -271,7 +275,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
                 }
             }
             
-            // Unregister the login item agent if currently enabled
+            // Unregister login item if currently enabled
             if arguments[1] == "--unregister" {
                 do {
                     if appService.status == .enabled {
@@ -290,11 +294,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, DataModelDelegate, PrefDataM
             NSApp.terminate(nil)
 #endif
         }
-        // Ensure only a single instance of the app is running
+        // Prevent multiple instances of the app from running simultaneously
         if isAppAlreadyRunning() {
             NSApp.terminate(nil)
         }
-        // Respect MDM restrictions and alert the user if AirDrop is disabled by policy
+        // Show alert and exit if AirDrop is disabled by configuration profile
         if airDropManagedDisabled() {
             let alert = NSAlert()
             alert.messageText = "Alert"
@@ -305,7 +309,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             NSApp.terminate(nil)
         }
         
-        // First launch: ask the user if ADA should be allowed to launch at login
+        // On first launch, ask user if app should start at login
         if UserDefaults.standard.bool(forKey: "afterFirstLaunch") == false && appService.status != .enabled {
             
             let alert = NSAlert()
@@ -315,6 +319,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
 """
             alert.addButton(withTitle: "Yes")
             alert.addButton(withTitle: "No")
+            // Persist user's choice by registering the login item when accepted
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
                 
@@ -329,35 +334,36 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             
             
         }
-        // Mark first-launch prompt as completed
+        // Mark that first-launch flow has been completed
+        // Mark that first-launch flow has been completed
         UserDefaults.standard.setValue(true, forKey: "afterFirstLaunch")
+        // Receive notifications while app is in foreground
         UNUserNotificationCenter.current().delegate = self
-        NSApplication.shared.setActivationPolicy(.accessory)
-        // Request local notification authorization for status change alerts
+        // Request user's permission for local notifications
         self.notificationPermissions()
         
         
-        // Seed default AirDrop setting if not present
+        /// Seed default AirDrop preference if none is set.
         if UserDefaults.standard.string(forKey: "airDropSetting") == nil {
             UserDefaults.standard.set("Contacts Only", forKey: "airDropSetting")
         }
         
-        // Seed default timing (minutes) for automatic reset
+        /// Seed default timing (in minutes) for automatic reset if missing.
         if UserDefaults.standard.string(forKey: "timing") == nil {
             UserDefaults.standard.set(15, forKey: "timing")
         }
-        // Wire up delegates for preference watching and updates
+        // Wire delegates for preference and app settings observation
         prefWatcher.delegate = self
         observer.delegate = self
         
-        // If current system AirDrop setting is out of compliance, schedule a reset
+        // If system AirDrop state differs from desired policy (and not Off), schedule a reset
         if domain?.string(forKey: "DiscoverableMode") != UserDefaults.standard.string(forKey: "airDropSetting") && domain?.string(forKey: "DiscoverableMode") != "Off" {
             Task {
                 await prefWatcher.resetAirDrop()
             }
         }
         
-        // Prepare path to the sharingd preferences file and start monitoring
+        // Path to sharingd preference file to monitor for changes
         let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
         let pathToPref = "\(homeDirURL.path)/Library/Preferences/com.apple.sharingd.plist"
         prefWatcher.filePath = pathToPref
@@ -365,7 +371,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
         
-        // Determine whether the menu bar icon is forced hidden by managed preferences
+        // Check if MDM forces the menu icon to be hidden
         let hideMenuIconValue = UserDefaults.standard.bool(forKey: "hideMenuIcon")
         let isForced = CFPreferencesAppValueIsForced("hideMenuIcon" as CFString, appBundleID as CFString)
         
@@ -374,10 +380,11 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 NSStatusBar.system.removeStatusItem(adaMenu)
                 isStatusItemVisible = false
             }
+            // Still monitor preferences even if UI is hidden
             prefWatcher.startMonitoring()
         } else {
             isStatusItemVisible = true
-            // Optionally perform update check if not disabled by managed preferences
+            // Optionally perform background update checks (unless disabled by policy)
             let isForcedUpdatesDisable = CFPreferencesAppValueIsForced("disableUpdates" as CFString, appBundleID as CFString)
             if UserDefaults.standard.bool(forKey: "disableUpdates") && isForcedUpdatesDisable {
                 Logger.general.info("Updates disabled")
@@ -387,16 +394,19 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
 //                    await updater.check()
 //                }
             }
-            // Build the initial status bar menu with dynamic items and actions
+            // Build initial status bar menu
             adaMenu.menu = NSMenu()
             
+            // Apply current icon appearance preference
             self.menuIcon()
             
             adaMenuListing()
+            // Insert standard menu items after dynamic AirDrop/PF status entries
             let prefs = NSMenuItem(title: "Preferences", action: #selector(Preferences), keyEquivalent: "")
             
             let softwareUpdate = NSMenuItem(title: "Check for Update", action: #selector(updateCheckFunc), keyEquivalent: "")
             
+            // Offset insertion index when PF status rows are present
             var IncreaseByOne: Int = 0
             if let menuItems = adaMenu.menu {
                 for item in menuItems.items {
@@ -420,22 +430,26 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             let quit = NSMenuItem(title: "Quit", action: #selector(QuitApp), keyEquivalent: "")
             guard let menuCount = adaMenu.menu?.items.count else { return }
             adaMenu.menu?.insertItem(quit, at: menuCount)
+            // Start streaming sharingd logs if profile enables it
             do {
-//                try SharingdLogStreamer().start()
+                // Begin log streaming to update menu/status reactively
                 if logStreamer.checkProfileStatus()  {
                     try logStreamer.start()
                 }
             } catch {
                 print("logging failed")
             }
+            // Start monitoring the sharingd preference file
             prefWatcher.startMonitoring()
         }
         
     }
     
     // MARK: - Notifications
+    /// Ask user for permission to display local notifications
     /// Requests authorization for delivering local notifications when AirDrop status changes.
     func notificationPermissions() {
+        // Ask user for permission to display local notifications
         nc.requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
             if granted {
                 self.prefWatcher.notificationsAllow = true
@@ -446,6 +460,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     }
     
     // MARK: - Menu Icon
+    /// User preference for colorful vs monochrome menu bar icon
     /// Applies the selected icon mode (colorful/monochrome) to the status bar item.
     func menuIcon(){
         let iconPref = UserDefaults.standard.string(forKey: "icon_mode") ?? "colorful"
@@ -466,8 +481,10 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     /// Ensures duplicate indicators are removed before inserting the current state.
     func adaMenuListing(){
         
+        // Read PF (packet filter) status persisted by helper
         var PFADAStatus: String?
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
+        // Helper writes ADA_PF key here to indicate direction restrictions
         let path = "/Library/Preferences/\(bundleID).plist"
         
         if FileManager.default.fileExists(atPath: path) {
@@ -481,6 +498,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             }
         }
             
+        // Read current AirDrop discoverability from sharingd domain
         if let airDropPref = domain?.object(forKey: "DiscoverableMode") {
             airDropStatus = "Airdrop Status: " + String(describing: airDropPref)
         } else {
@@ -488,11 +506,13 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         let airDropStatus = NSMenuItem(title: airDropStatus, action: nil, keyEquivalent: "")
         
+        // Ensure only one status row exists at the top
         if adaMenu.menu?.items.count != 0 {
             adaMenu.menu?.removeItem(at: 0)
         }
         
         adaMenu.menu?.insertItem(airDropStatus, at: 0)
+        // Map ADA_PF to a human-readable menu label
         let pfStatus: String
         switch PFADAStatus {
         case "DisableOut":
@@ -503,6 +523,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
             pfStatus = ""
         }
         
+        // Insert or refresh the PF direction row (Incoming Only/Outgoing Only)
         if !pfStatus.isEmpty {
             if let menuItems = adaMenu.menu {
                 for item in menuItems.items where item.title == "AirDrop: Incoming Only" || item.title == "AirDrop: Outgoing Only" {
@@ -518,15 +539,18 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     @objc func launchAtLogin(){
         Logger.general.info("Launch at Loging Function")
         
+        // Mark first-launch as completed when toggled from Preferences
         UserDefaults.standard.setValue(true, forKey: "afterFirstLaunch")
     }
     /// Quits the application.
     @objc func QuitApp() {
+        // Stop log streaming before exiting
         logStreamer.stop()
         exit(0)
     }
     /// Presents the Preferences window (centers on screen, reuses existing window if open).
     @objc func Preferences() {
+        // Reuse existing Preferences window if already open
         for currentWindow in NSApplication.shared.windows {
             if currentWindow.title.contains("Air Drop Assistant Preferences") {
                 if #available(OSX 14.0, *) {
@@ -537,6 +561,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 return
             }
         }
+        // Create Preferences UI and host it in a minimal titled window
         let prefViewController = PreferencesViewController()
         prefViewController.delegate = self
         var window: PreferencesWindow?
@@ -545,15 +570,15 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         let rect = NSMakeRect(screenSize.width/2 - windowSize.width/2, screenSize.height/2 - windowSize.height/2, windowSize.width, windowSize.height)
         window = PreferencesWindow(contentRect: rect, styleMask: [.miniaturizable, .closable, .titled], backing: .buffered, defer: false)
         window?.title = "Air Drop Assistant Preferences"
+        // Bring window to front and make key
         NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
         window?.makeKeyAndOrderFront(nil)
         window?.orderFrontRegardless()
         window?.contentViewController = prefViewController
     }
     // MARK: - Termination
-    /// Placeholder for any cleanup needed when the app is terminating.
+    /// Stop log streaming if still active to release resources
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
         if logStreamer.checkStatus() {
             logStreamer.stop()
         }
@@ -564,6 +589,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         return true
     }
     // MARK: - Utilities
+    /// Enumerate running apps and compare bundle IDs to detect duplicates
     /// Returns true if another instance of this app bundle is already running.
     func isAppAlreadyRunning() -> Bool {
         let runningApps = NSWorkspace.shared.runningApplications
@@ -572,6 +598,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
         }
         return isRunning
     }
+    /// Bridge menu action to Sparkle update check
     /// Manually trigger an asynchronous update check (from the menu item).
     @objc func updateCheckFunc (){
         self.checkForUpdates(nil)
@@ -579,6 +606,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
     /// Detects whether AirDrop is disabled by system/MDM configuration profiles by checking
     /// com.apple.NetworkBrowser and com.apple.applicationaccess preferences.
     func airDropManagedDisabled () -> Bool {
+        // Check MDM-managed preference for AirDrop in NetworkBrowser domain
         let networkBrowser = UserDefaults(suiteName: "com.apple.NetworkBrowser")
         if let networkBrowserAirDrop = networkBrowser?.bool(forKey: "DisableAirDrop") {
             if networkBrowserAirDrop {
@@ -586,6 +614,7 @@ AirDrop is disabled by an MDM Profile. Please contact your MDM administrator.
                 return true
             }
         }
+        // Check Screen Time / Application Access domain for allowAirDrop policy
         if let value = UserDefaults.standard.persistentDomain(forName: "com.apple.applicationaccess")?["allowAirDrop"] {
             if let boolValue = value as? Bool {
                 if !boolValue {
@@ -607,6 +636,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
     {
+        // Show as banner while app is foregrounded
         completionHandler(.banner)
     }
     

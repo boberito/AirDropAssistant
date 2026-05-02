@@ -37,8 +37,7 @@ protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
 }
 
-/// Encapsulates file monitoring of the sharingd preferences and logic to reset
-/// AirDrop settings back to the desired value after a delay.
+/// Monitors and enforces AirDrop preferences by watching sharingd's plist.
 class PrefWatcher {
     
     /// Reports updates to UI/menu via delegate
@@ -57,27 +56,29 @@ class PrefWatcher {
     var filePath = ""
     
     // MARK: - Monitoring
-    /// Starts monitoring the preferences file for rename/delete, which indicates a write.
-    /// Re-establishes the watch as needed when the file is rotated.
+    /// Begin observing the sharingd plist for changes.
     func startMonitoring() {
+        // Avoid double-starting the monitor
         if source != nil {
             return
         }
 
         do {
-            // Open an event-only file descriptor to observe changes
+            // Open file in event-only mode
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
             
             // Create a DispatchSource for all file system events on the descriptor
             let newSource = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
             source = newSource
+            
+            // Handle file system events and enforce policy as needed
             newSource.setEventHandler { [weak self] in
                 guard let self else { return }
                 let event = newSource.data
                 
                 Logger.airdropstatus.info("\(self.filePath) File system event: \(newSource.dataStrings.joined(separator: ", "))")
                 
-                // File was rotated/replaced, treat as a write and reconfigure monitoring
+                // File replaced/renamed indicates write; refresh and enforce
                 if event.contains(.delete) || event.contains(.rename) {
                     self.stopMonitoring()
                     
@@ -124,7 +125,7 @@ class PrefWatcher {
             return
             
         } else {
-            // Read the enforcement delay (in minutes) from UserDefaults
+            // Read enforcement delay (minutes)
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
             Logger.airdropstatus.info("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
@@ -153,12 +154,12 @@ class PrefWatcher {
         }
     }
     
+    /// Stop observing file changes.
     func stopMonitoring() {
         source?.cancel()
         source = nil
     }
-    /// Immediately enforce the desired DiscoverableMode, wait for AirDrop activity to finish,
-    /// restart sharingd to apply, optionally post a notification, and re-arm monitoring.
+    /// Force sharingd to the desired DiscoverableMode with safety checks.
     func resetDiscoverableMode() {
         guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
         resetTask = nil
@@ -169,6 +170,7 @@ class PrefWatcher {
         // Set the desired AirDrop mode
         domain?.set(ADASetting, forKey: "DiscoverableMode")
         Logger.airdropstatus.info("Airdrop Status changed by ADA to \(ADASetting)")
+        // Loop until sharingd appears idle to avoid interrupting transfers
         var airDropInUse = true
         repeat {
             let task = Process()
@@ -195,7 +197,7 @@ class PrefWatcher {
             }
             
         } while airDropInUse
-        // Restart sharingd to ensure the new setting takes effect
+        // Restart sharingd to apply the new DiscoverableMode
         let process = Process()
         process.launchPath = "/usr/bin/killall"
         process.arguments = ["sharingd"]
@@ -207,7 +209,7 @@ class PrefWatcher {
         
         process.launch()
         process.waitUntilExit()
-        // Post a local notification to inform the user of the change
+        // Post a local notification summarizing the change
         if notificationsAllow{
             Task {
                 let settings = await nc.notificationSettings()
@@ -230,7 +232,7 @@ class PrefWatcher {
                 try await nc.add(request)
             }
         }
-        // Resume watching after enforcement
+        // Re-arm monitoring after enforcement completes
         self.startMonitoring()
         
         

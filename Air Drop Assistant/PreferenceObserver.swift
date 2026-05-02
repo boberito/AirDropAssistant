@@ -40,19 +40,26 @@ protocol AppPrefObserverDelegate {
     func newPreferenceValue()
 }
 
-/// Creates Combine publishers for app preferences and merges them to notify a single delegate.
+/// Observes app preferences and notifies delegate on any change.
 class AppPreferencesObserver {
     
+    /// Target delegate to notify on preference changes
     var delegate: AppPrefObserverDelegate?
+    /// Retains Combine subscriptions
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Setup
     /// Set up Combine pipelines to observe multiple preferences and coalesce changes.
     init() {
+        // Publisher for hideMenuIcon
         let hideMenuIconPref = UserDefaults.standard.publisher(for: \.hideMenuIcon)
+        // Publisher for icon_mode
         let icon_modePref = UserDefaults.standard.publisher(for: \.icon_mode)
+        // Publisher for disableUpdates
         let disableUpdatesPref = UserDefaults.standard.publisher(for: \.disableUpdates)
+        // Publisher for timing
         let timingPref = UserDefaults.standard.publisher(for: \.timing)
+        // Publisher for airDropSetting
         let airDropSettingPref = UserDefaults.standard.publisher(for: \.airDropSetting)
         // Merge: (hideMenuIcon, icon_mode) + disableUpdates + timing, then combine with airDropSetting
         Publishers.CombineLatest3(
@@ -61,7 +68,7 @@ class AppPreferencesObserver {
                 timingPref
             )
             .combineLatest(airDropSettingPref)
-            // Any change triggers a single delegate callback to refresh UI/menu
+            // Coalesce into a single callback to rebuild UI/menu
             .sink { _ in
                 self.delegate?.newPreferenceValue()
             }

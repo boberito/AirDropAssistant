@@ -49,11 +49,13 @@ class PreferencesViewController: NSViewController {
     override func loadView() {
         // Load PF restriction state from the app's plist
         loadPref()
+        // Root view frame and setup
         let rect = NSRect(x: 0, y: 0, width: 600, height: 200)
         view = NSView(frame: rect)
+        // Enable layer-backed view for potential future styling
         view.wantsLayer = true
         
-        // Timing (delay) selector
+        // Build and configure the timing popup
         let timelengthButton = NSPopUpButton(frame: NSRect(x: 20, y: 140, width: 150, height: 25), pullsDown: false)
         let prefTime = UserDefaults.standard.integer(forKey: "timing")
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
@@ -78,6 +80,7 @@ class PreferencesViewController: NSViewController {
         
         timelengthButton.action = #selector(timeLengthSelect)
         
+        // Label for the timing selector
         let timelengthLabel = NSTextField(frame: NSRect(x: 20, y: 160, width: 150, height: 25))
         timelengthLabel.stringValue = "Select Time Length:"
         timelengthLabel.isBordered = false
@@ -89,7 +92,7 @@ class PreferencesViewController: NSViewController {
         view.addSubview(timelengthLabel)
         
         
-        // Default AirDrop mode selector
+        // Build and configure the default AirDrop mode popup
         let airDropSettingButton = NSPopUpButton(frame: NSRect(x: 200, y: 140, width: 150, height: 25), pullsDown: false)
         if CFPreferencesAppValueIsForced("airDropSetting" as CFString, appBundleID as CFString) {
             airDropSettingButton.isEnabled = false
@@ -102,6 +105,7 @@ class PreferencesViewController: NSViewController {
         }
         airDropSettingButton.action = #selector(airDropSelect)
         
+        // Label for the AirDrop mode selector
         let airDropSettingLabel = NSTextField(frame: NSRect(x: 200, y: 160, width: 200, height: 25))
         airDropSettingLabel.stringValue = "Select Setting:"
         airDropSettingLabel.isBordered = false
@@ -109,7 +113,7 @@ class PreferencesViewController: NSViewController {
         airDropSettingLabel.isEditable = false
         airDropSettingLabel.drawsBackground = false
         
-        // Menu bar icon style selector
+        // Label for menu bar icon selection
         let iconLabel = NSTextField(frame: NSRect(x: 200, y: 110, width: 150, height: 25))
         iconLabel.stringValue = "Select Icon:"
         iconLabel.isBordered = false
@@ -117,13 +121,14 @@ class PreferencesViewController: NSViewController {
         iconLabel.isEditable = false
         iconLabel.drawsBackground = false
         
+        // Preview of colorful icon
         let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:80, width: 50, height: 40))
         let coloricon = NSImage(named: NSImage.Name("menuicon"))
         coloricon?.size.width = 18
         coloricon?.size.height = 18
         colorfulIcon.image = coloricon
         
-        
+        // Preview of monochrome icon
         let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:60, width: 50, height: 40))
         
         
@@ -132,12 +137,13 @@ class PreferencesViewController: NSViewController {
         monoicon?.size.height = 18
         monochromeIcon.image = monoicon
         
-        
+        // Radio for colorful icon
         let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconOneRadioButton.frame = NSRect(x: 200, y: 90, width: 150, height: 25)
         //        iconOneRadioButton.title = "Colorful"
         iconOneRadioButton.title = "     Colorful"
         
+        // Radio for monochrome icon
         let iconTwoRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconTwoRadioButton.frame = NSRect(x: 200, y: 65, width: 150, height: 25)
         //        iconTwoRadioButton.title = "Monochrome"
@@ -154,7 +160,7 @@ class PreferencesViewController: NSViewController {
             iconTwoRadioButton.isEnabled = false
         }
         
-        // App info and project link
+        // App name and version information
 //        let infoTextView = NSTextField(frame: NSRect(x: 188, y: -40, width: 300, height: 100))
         let infoTextView = NSTextField(frame: NSRect(x: 385, y: 30, width: 300, height: 50))
         infoTextView.font = NSFont.systemFont(ofSize: 16)
@@ -171,6 +177,7 @@ class PreferencesViewController: NSViewController {
             infoTextView.stringValue = infoString
         }
         
+        // Link to project repository
         let linkTextView = NSTextView(frame: NSRect(x: 320, y: 10, width: 300, height: 25))
         linkTextView.textContainerInset = NSSize(width: 10, height: 10)
         linkTextView.isEditable = false
@@ -185,7 +192,7 @@ class PreferencesViewController: NSViewController {
         linkAttributeString.addAttribute(.font, value: boldFont, range: linkRange)
         linkTextView.textStorage?.setAttributedString(linkAttributeString)
     
-        // PF-based direction restrictions
+        // UI for PF-based direction restrictions
         let restrictLabel = NSTextField(frame: NSRect(x: 20, y: 110, width: 150, height: 25))
         restrictLabel.stringValue = "Restrict AirDrop:"
         restrictLabel.isBordered = false
@@ -244,6 +251,7 @@ class PreferencesViewController: NSViewController {
             startUpButton.intValue = 0
         }
         
+        // App icon preview
         let appIcon = NSImageView(frame:NSRect(x: 415, y:85, width: 100, height: 100))
         appIcon.image = NSImage(named: "AppIcon")
         
@@ -271,6 +279,7 @@ class PreferencesViewController: NSViewController {
         // Do any additional setup after loading the view.
     }
     
+    /// Backing represented object (unused)
     override var representedObject: Any? {
         didSet {
             // Update the view, if already loaded.
@@ -280,6 +289,7 @@ class PreferencesViewController: NSViewController {
     /// Persist the selected default AirDrop mode.
     @objc func airDropSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
+            // Persist to UserDefaults for enforcement logic
             UserDefaults.standard.set(selected, forKey: "airDropSetting")
         }
         
@@ -301,6 +311,7 @@ class PreferencesViewController: NSViewController {
     /// Persist the selected enforcement delay in minutes.
     @objc func timeLengthSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
+            // Parse minutes from the selected title
             let min = selected.split(separator: " ")[0]
             let minInt = Int(min)!
             UserDefaults.standard.set(minInt, forKey: "timing")
@@ -346,6 +357,7 @@ class PreferencesViewController: NSViewController {
         default:
             NSLog("You crazy you got here")
         }
+        // Refresh PF state from managed plist
         loadPref()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.delegate?.updatePF()
@@ -384,8 +396,7 @@ class PreferencesViewController: NSViewController {
     
     /// Toggle menu bar icon style and notify delegate to refresh the icon immediately.
     @objc func changeIcon(_ sender: NSButton) {
-        //use UserDefaults
-        
+        // Toggle preference and notify delegate
         if sender.title == "     Monochrome" {
             UserDefaults.standard.set("bw", forKey: "icon_mode")
             
@@ -412,7 +423,7 @@ class PreferencesViewController: NSViewController {
                 NSLog("problem registering service")
             }
         } else {
-            
+            // Warn user that disabling may quit the app
             let alert = NSAlert()
             alert.messageText = "Alert"
             alert.informativeText = """
