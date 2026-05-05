@@ -14,9 +14,10 @@
     <item>
             <title>1.6</title>
              <description sparkle:format="plain-text"><![CDATA[
-- Added Sparkle-based updating
-- Fixed things
-- Did stuff!
+- Added AirDrop logging when the appropriate configuration profile is installed
+- Added Sparkle Framework for Update Management
+- Fixed UI issues
+- Other bug fixes and improvements
   ]]></description>
             <pubDate>Sat, 18 Apr 2026 21:12:33 -0400</pubDate>
             <sparkle:version>235</sparkle:version>
