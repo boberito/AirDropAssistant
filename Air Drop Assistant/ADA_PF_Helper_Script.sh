@@ -25,7 +25,7 @@ disableAirDropPF() {
     /usr/bin/sed -i '' '/load anchor "ada_anchor" from "\/etc\/pf.anchors\/ada_anchor"/d' /etc/pf.conf
     /sbin/pfctl -e 2> /dev/null
     /sbin/pfctl -f /etc/pf.conf 2> /dev/null
-    /bin/launchctl disable system/mscp.pfctl 2> /dev/null
+    /bin/launchctl disable system/ada.pfctl 2> /dev/null
     /bin/launchctl bootout system "/Library/LaunchDaemons/com.ttinc.Air-Drop-Assistant.pfctl.plist" 2> /dev/null
     /bin/rm -rf "/Library/LaunchDaemons/com.ttinc.Air-Drop-Assistant.pfctl.plist"
     /usr/bin/defaults write "/Library/Preferences/com.ttinc.Air-Drop-Assistant.plist" ADA_PF "off"
@@ -49,7 +49,6 @@ disableInComing() {
 if [[ $EUID -ne 0 ]]; then
     /usr/bin/logger "ADA: Prompting for Admin Privs"
     /usr/bin/logger "ADA: $0 $1"
-    # /usr/bin/osascript -e "do shell script \"$0 $1\" with administrator privileges"
     /usr/bin/osascript -e 'on run {commandName, commandArgument}' -e 'do shell script ((quoted form of commandName) & " " & (quoted form of commandArgument)) without altering line endings with administrator privileges with prompt "Air Drop Assistant would like permission to change system level settings."' -e 'end run' -- "$0" "$1"
     exit 0
 fi

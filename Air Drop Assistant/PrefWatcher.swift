@@ -10,6 +10,12 @@ import System
 import UserNotifications
 import OSLog
 
+// MARK: - PrefWatcher Overview
+// Watches the sharingd preference file for changes and enforces the configured
+// AirDrop DiscoverableMode after a configurable delay. Also posts local notifications
+// when status changes, if permitted.
+
+/// Convenience to render human-readable strings for DispatchSource filesystem events.
 extension DispatchSourceFileSystemObject {
     var dataStrings: [String] {
         var s = [String]()
@@ -26,76 +32,100 @@ extension DispatchSourceFileSystemObject {
     }
 }
 
+/// Delegate for reporting AirDrop status updates to the app (e.g., to rebuild the menu).
 protocol DataModelDelegate {
     func didReceiveDataUpdate(airDropStatus: String)
 }
 
-
+/// Monitors and enforces AirDrop preferences by watching sharingd's plist.
 class PrefWatcher {
     
+    /// Reports updates to UI/menu via delegate
     var delegate: DataModelDelegate?
+    /// Whether we can post local notifications
     var notificationsAllow = false
+    /// (Unused) Placeholder for FSEvents stream if needed
     var eventStream: FSEventStreamRef?
+    /// Dispatch source for low-level file change events
     var source: DispatchSourceFileSystemObject?
+    /// Pending delayed reset, if one has been scheduled.
+    var resetTask: Task<Void, Never>?
+    /// Backed UserDefaults domain for sharingd
     let domain = UserDefaults(suiteName: "com.apple.sharingd")
+    /// Full path to com.apple.sharingd.plist under the current user's Library/Preferences
     var filePath = ""
     
+    // MARK: - Monitoring
+    /// Begin observing the sharingd plist for changes.
     func startMonitoring() {
-        
+        // Avoid double-starting the monitor
+        if source != nil {
+            return
+        }
+
         do {
-            // Open the file descriptor in event-only mode
+            // Open file in event-only mode
             let fdesc = try FileDescriptor.open(filePath, .readOnly, options: .eventOnly)
             
-            // Create the dispatch source
-            source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
-            source?.setEventHandler {
-                let event = self.source?.data
+            // Create a DispatchSource for all file system events on the descriptor
+            let newSource = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fdesc.rawValue, eventMask: .all, queue: .global())
+            source = newSource
+            
+            // Handle file system events and enforce policy as needed
+            newSource.setEventHandler { [weak self] in
+                guard let self else { return }
+                let event = newSource.data
                 
-                if let eventStrings = self.source?.dataStrings {
-                    Logger.airdropstatus.info("\(self.filePath) File system event: \(eventStrings.joined(separator: ", "))")
+                Logger.airdropstatus.info("\(self.filePath) File system event: \(newSource.dataStrings.joined(separator: ", "))")
+                
+                // File replaced/renamed indicates write; refresh and enforce
+                if event.contains(.delete) || event.contains(.rename) {
+                    self.stopMonitoring()
                     
-                }
-                
-                if event?.contains(.delete) == true || event?.contains(.rename) == true {
-                    do {
-                        // Close the existing file descriptor
-                        try fdesc.close()
-                        
-                        // Stop the current dispatch source
-                        self.source?.cancel()
-                        self.source = nil
-                        
-                        if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
+                    // Notify delegate with the new AirDrop status
+                    if let ADstatus = self.domain?.string(forKey: "DiscoverableMode") {
+                        DispatchQueue.main.async {
                             self.delegate?.didReceiveDataUpdate(airDropStatus: ADstatus)
-                            Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                         }
-                        
-                        Task {
-                            await self.resetAirDrop()
-                        }
-                    } catch {
-                        Logger.airdropstatus.error("\(error.localizedDescription)")
+                        Logger.airdropstatus.info("Airdrop Status Changed to \(ADstatus)")
                     }
+                    
+                    // Schedule enforcement back to the desired setting
+                    Task {
+                        await self.resetAirDrop()
+                    }
+                    
+                    self.startMonitoring()
                 }
             }
             
-            source?.setCancelHandler {
-                
-                self.startMonitoring()
+            newSource.setCancelHandler {
+                do {
+                    try fdesc.close()
+                } catch {
+                    Logger.airdropstatus.error("\(error.localizedDescription)")
+                }
             }
             
-            source?.resume()
+            newSource.resume()
             
         } catch {
             Logger.airdropstatus.error("\(error.localizedDescription)")
         }
     }
     
+    // MARK: - Enforcement
+    /// Waits the configured delay and then calls resetDiscoverableMode() unless
+    /// the system is already at the desired state or Off.
     func resetAirDrop() async {
+        // No enforcement needed if already compliant or Off
         if domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || domain!.string(forKey: "DiscoverableMode") == "Off" {
+            resetTask?.cancel()
+            resetTask = nil
             return
             
         } else {
+            // Read enforcement delay (minutes)
             let ADATimer = UserDefaults.standard.integer(forKey: "timing")
             let fullTime = Double(ADATimer * 60)
             Logger.airdropstatus.info("ADA will change AirDrop Setting in \(fullTime) seconds to \(UserDefaults.standard.string(forKey: "airDropSetting") ?? "")")
@@ -105,26 +135,49 @@ class PrefWatcher {
             let futureTime = now.advanced(by: .seconds(fullTime))
             let tolerance: Duration = .seconds(0.5)
             
-            Task {
-                try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
-                self.resetDiscoverableMode()
+            // Sleep until the desired time using ContinuousClock, then enforce
+            resetTask?.cancel()
+            resetTask = Task { [weak self] in
+                do {
+                    try await Task.sleep(until: futureTime, tolerance: tolerance, clock: clock)
+                    guard !Task.isCancelled else { return }
+                    guard let self else { return }
+                    if self.domain!.string(forKey: "DiscoverableMode") == UserDefaults.standard.string(forKey: "airDropSetting") || self.domain!.string(forKey: "DiscoverableMode") == "Off" {
+                        self.resetTask = nil
+                        return
+                    }
+                    self.resetDiscoverableMode()
+                } catch {
+                    return
+                }
             }
         }
     }
-    func resetDiscoverableMode() {
-        
+    
+    /// Stop observing file changes.
+    func stopMonitoring() {
         source?.cancel()
+        source = nil
+    }
+    /// Force sharingd to the desired DiscoverableMode with safety checks.
+    func resetDiscoverableMode() {
+        guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
+        resetTask = nil
+        stopMonitoring()
+        // Pause monitoring while we mutate the file
         let nc = UNUserNotificationCenter.current()
         let domain = UserDefaults(suiteName: "com.apple.sharingd")
-        guard let ADASetting = UserDefaults.standard.string(forKey: "airDropSetting") else { return }
+        // Set the desired AirDrop mode
         domain?.set(ADASetting, forKey: "DiscoverableMode")
         Logger.airdropstatus.info("Airdrop Status changed by ADA to \(ADASetting)")
+        // Loop until sharingd appears idle to avoid interrupting transfers
         var airDropInUse = true
         repeat {
             let task = Process()
             task.launchPath = "/bin/bash"
+            // Poll for active AirDrop file activity to avoid interrupting transfers
             let command = """
-        /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $9 !~ /AirDropHashDB|\\.plist|\\.loctable|\\.car|\\/System/' | /usr/bin/tail -1
+        /usr/sbin/lsof -c sharingd | /usr/bin/awk '$5 == "REG" && $4 ~ /[rw]/ && $0 !~ /Group Containers|AirDropHashDB/'
         """
             task.arguments = ["-c", command]
             let pipe = Pipe()
@@ -144,6 +197,7 @@ class PrefWatcher {
             }
             
         } while airDropInUse
+        // Restart sharingd to apply the new DiscoverableMode
         let process = Process()
         process.launchPath = "/usr/bin/killall"
         process.arguments = ["sharingd"]
@@ -155,6 +209,7 @@ class PrefWatcher {
         
         process.launch()
         process.waitUntilExit()
+        // Post a local notification summarizing the change
         if notificationsAllow{
             Task {
                 let settings = await nc.notificationSettings()
@@ -165,11 +220,19 @@ class PrefWatcher {
                 content.title = "AirDrop Status Changed"
                 content.body = ADASetting
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-                
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                let notificationID = "airdrop-status-changed"
+                nc.removePendingNotificationRequests(withIdentifiers: [notificationID])
+                nc.removeDeliveredNotifications(withIdentifiers: [notificationID])
+
+                let request = UNNotificationRequest(
+                    identifier: notificationID,
+                    content: content,
+                    trigger: trigger
+                )
                 try await nc.add(request)
             }
         }
+        // Re-arm monitoring after enforcement completes
         self.startMonitoring()
         
         

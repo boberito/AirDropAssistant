@@ -4,5 +4,9 @@
 <dict>
 	<key>LSMultipleInstancesProhibited</key>
 	<false/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/boberito/AirDropAssistant/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>ZME/ljVgiuE3yevDwqNL5kK3hPRVzZLRZnc3Ihz9gl8=</string>
 </dict>
 </plist>

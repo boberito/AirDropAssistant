@@ -5,34 +5,57 @@
 //  Created by Bob Gendler on 8/17/24.
 //
 
-
 import Cocoa
 import ServiceManagement
 import OSLog
 
+// MARK: - PreferencesViewController Overview
+// Implements the app's Preferences window in AppKit. Allows users to:
+// - Choose default AirDrop mode
+// - Select the enforcement delay (timer)
+// - Toggle Launch at Login
+// - Choose menu bar icon style (colorful/monochrome)
+// - Configure PF-based direction restrictions via helper script
+
+/// Delegate contract for notifying the app of preference changes that require UI or
+/// functional updates (icon mode changes, AirDrop checks, PF updates).
 protocol PrefDataModelDelegate {
     func didRecievePrefUpdate(iconMode: String)
     func checkAirDrop()
     func updatePF()
 }
 
+/// AppKit-based Preferences UI built programmatically without storyboards.
+/// Constructs controls, wires up actions, and reflects current settings.
 class PreferencesViewController: NSViewController {
     
+    /// Cached PF restriction state loaded from the app's managed plist
     var pfADAPref: String?
+    /// Notifies the app to react to preference changes
     var delegate: PrefDataModelDelegate?
+    /// Tracks current selection index for convenience
     var currentButton: Int?
+    /// Tracks previously-selected PF radio to revert on failure
     var previousRadioButton = NSButton()
     
     
+    // MARK: - Lifecycle
+    /// When the window closes, re-check AirDrop compliance via the delegate.
     override func viewDidDisappear() {
         NSLog("Preferences Window closed")
         delegate?.checkAirDrop()
     }
+    /// Build the Preferences UI and seed all controls from UserDefaults and managed prefs.
     override func loadView() {
+        // Load PF restriction state from the app's plist
         loadPref()
+        // Root view frame and setup
         let rect = NSRect(x: 0, y: 0, width: 600, height: 200)
         view = NSView(frame: rect)
+        // Enable layer-backed view for potential future styling
         view.wantsLayer = true
+        
+        // Build and configure the timing popup
         let timelengthButton = NSPopUpButton(frame: NSRect(x: 20, y: 140, width: 150, height: 25), pullsDown: false)
         let prefTime = UserDefaults.standard.integer(forKey: "timing")
         guard let appBundleID = Bundle.main.bundleIdentifier else { return }
@@ -57,6 +80,7 @@ class PreferencesViewController: NSViewController {
         
         timelengthButton.action = #selector(timeLengthSelect)
         
+        // Label for the timing selector
         let timelengthLabel = NSTextField(frame: NSRect(x: 20, y: 160, width: 150, height: 25))
         timelengthLabel.stringValue = "Select Time Length:"
         timelengthLabel.isBordered = false
@@ -68,6 +92,7 @@ class PreferencesViewController: NSViewController {
         view.addSubview(timelengthLabel)
         
         
+        // Build and configure the default AirDrop mode popup
         let airDropSettingButton = NSPopUpButton(frame: NSRect(x: 200, y: 140, width: 150, height: 25), pullsDown: false)
         if CFPreferencesAppValueIsForced("airDropSetting" as CFString, appBundleID as CFString) {
             airDropSettingButton.isEnabled = false
@@ -80,6 +105,7 @@ class PreferencesViewController: NSViewController {
         }
         airDropSettingButton.action = #selector(airDropSelect)
         
+        // Label for the AirDrop mode selector
         let airDropSettingLabel = NSTextField(frame: NSRect(x: 200, y: 160, width: 200, height: 25))
         airDropSettingLabel.stringValue = "Select Setting:"
         airDropSettingLabel.isBordered = false
@@ -87,6 +113,7 @@ class PreferencesViewController: NSViewController {
         airDropSettingLabel.isEditable = false
         airDropSettingLabel.drawsBackground = false
         
+        // Label for menu bar icon selection
         let iconLabel = NSTextField(frame: NSRect(x: 200, y: 110, width: 150, height: 25))
         iconLabel.stringValue = "Select Icon:"
         iconLabel.isBordered = false
@@ -94,13 +121,14 @@ class PreferencesViewController: NSViewController {
         iconLabel.isEditable = false
         iconLabel.drawsBackground = false
         
+        // Preview of colorful icon
         let colorfulIcon = NSImageView(frame:NSRect(x: 205, y:80, width: 50, height: 40))
         let coloricon = NSImage(named: NSImage.Name("menuicon"))
         coloricon?.size.width = 18
         coloricon?.size.height = 18
         colorfulIcon.image = coloricon
         
-        
+        // Preview of monochrome icon
         let monochromeIcon = NSImageView(frame:NSRect(x: 205, y:60, width: 50, height: 40))
         
         
@@ -109,12 +137,13 @@ class PreferencesViewController: NSViewController {
         monoicon?.size.height = 18
         monochromeIcon.image = monoicon
         
-        
+        // Radio for colorful icon
         let iconOneRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconOneRadioButton.frame = NSRect(x: 200, y: 90, width: 150, height: 25)
         //        iconOneRadioButton.title = "Colorful"
         iconOneRadioButton.title = "     Colorful"
         
+        // Radio for monochrome icon
         let iconTwoRadioButton = NSButton(radioButtonWithTitle: "", target: Any?.self, action: #selector(changeIcon))
         iconTwoRadioButton.frame = NSRect(x: 200, y: 65, width: 150, height: 25)
         //        iconTwoRadioButton.title = "Monochrome"
@@ -131,6 +160,7 @@ class PreferencesViewController: NSViewController {
             iconTwoRadioButton.isEnabled = false
         }
         
+        // App name and version information
 //        let infoTextView = NSTextField(frame: NSRect(x: 188, y: -40, width: 300, height: 100))
         let infoTextView = NSTextField(frame: NSRect(x: 385, y: 30, width: 300, height: 50))
         infoTextView.font = NSFont.systemFont(ofSize: 16)
@@ -147,6 +177,7 @@ class PreferencesViewController: NSViewController {
             infoTextView.stringValue = infoString
         }
         
+        // Link to project repository
         let linkTextView = NSTextView(frame: NSRect(x: 320, y: 10, width: 300, height: 25))
         linkTextView.textContainerInset = NSSize(width: 10, height: 10)
         linkTextView.isEditable = false
@@ -161,6 +192,7 @@ class PreferencesViewController: NSViewController {
         linkAttributeString.addAttribute(.font, value: boldFont, range: linkRange)
         linkTextView.textStorage?.setAttributedString(linkAttributeString)
     
+        // UI for PF-based direction restrictions
         let restrictLabel = NSTextField(frame: NSRect(x: 20, y: 110, width: 150, height: 25))
         restrictLabel.stringValue = "Restrict AirDrop:"
         restrictLabel.isBordered = false
@@ -195,10 +227,13 @@ class PreferencesViewController: NSViewController {
             restrictRadioButtonThree.state = .on
             previousRadioButton = restrictRadioButtonThree
         }
+        
+        // Launch at Login toggle backed by SMAppService
         let startUpButton = NSButton(checkboxWithTitle: "Launch at Login", target: Any?.self, action: #selector(loginItemChange))
         startUpButton.frame = NSRect(x: 20, y: 25, width: 200, height: 25)
         //140
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
+        // Reflect current agent status in the checkbox
         switch appService.status {
         case .enabled:
             startUpButton.intValue = 1
@@ -216,6 +251,7 @@ class PreferencesViewController: NSViewController {
             startUpButton.intValue = 0
         }
         
+        // App icon preview
         let appIcon = NSImageView(frame:NSRect(x: 415, y:85, width: 100, height: 100))
         appIcon.image = NSImage(named: "AppIcon")
         
@@ -237,22 +273,28 @@ class PreferencesViewController: NSViewController {
         self.view = view
         
     }
+    /// Standard AppKit hook (unused for now).
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
     
+    /// Backing represented object (unused)
     override var representedObject: Any? {
         didSet {
             // Update the view, if already loaded.
         }
     }
+    // MARK: - Actions
+    /// Persist the selected default AirDrop mode.
     @objc func airDropSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
+            // Persist to UserDefaults for enforcement logic
             UserDefaults.standard.set(selected, forKey: "airDropSetting")
         }
         
     }
+    /// Load the PF restriction value from the app's managed plist under /Library/Preferences.
     func loadPref() {
         
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
@@ -266,8 +308,10 @@ class PreferencesViewController: NSViewController {
         }
     }
     
+    /// Persist the selected enforcement delay in minutes.
     @objc func timeLengthSelect(_ popUpButton: NSPopUpButton){
         if let selected = popUpButton.titleOfSelectedItem {
+            // Parse minutes from the selected title
             let min = selected.split(separator: " ")[0]
             let minInt = Int(min)!
             UserDefaults.standard.set(minInt, forKey: "timing")
@@ -276,7 +320,9 @@ class PreferencesViewController: NSViewController {
     }
 
     
+    /// Apply PF restriction via helper script. Revert UI if the script indicates failure.
     @objc func pfADARadio(_ sender: NSButton) {
+        // Remove PF restrictions
         switch sender.title {
         case "Allow Both Ways":
             if pfADAPref == "DisableOut" || pfADAPref == "DisableIn" {
@@ -288,6 +334,7 @@ class PreferencesViewController: NSViewController {
                 }
                 
             }
+        // Block outgoing AirDrop traffic
         case "Incoming Only":
             if pfADAPref != "DisableOut" {
                 if !runPFScript(argument: "--blockOut") {
@@ -297,6 +344,7 @@ class PreferencesViewController: NSViewController {
                     previousRadioButton = sender
                 }
             }
+        // Block incoming AirDrop traffic
         case "Outgoing Only":
             if pfADAPref != "DisableIn" {
                 if !runPFScript(argument: "--blockIn") {
@@ -309,6 +357,7 @@ class PreferencesViewController: NSViewController {
         default:
             NSLog("You crazy you got here")
         }
+        // Refresh PF state from managed plist
         loadPref()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.delegate?.updatePF()
@@ -319,6 +368,8 @@ class PreferencesViewController: NSViewController {
         self.view.window?.orderFrontRegardless()
     }
     
+    /// Runs the bundled zsh helper script with a specific argument to mutate PF rules.
+    /// Returns false if user cancels or script indicates failure.
     func runPFScript(argument: String) -> Bool {
         let resourcesPath = Bundle.main.resourceURL!.appendingPathComponent("ADA_PF_Helper_Script.sh").path
         NSLog("Script Path: \(resourcesPath)")
@@ -343,9 +394,9 @@ class PreferencesViewController: NSViewController {
         return true
     }
     
+    /// Toggle menu bar icon style and notify delegate to refresh the icon immediately.
     @objc func changeIcon(_ sender: NSButton) {
-        //use UserDefaults
-        
+        // Toggle preference and notify delegate
         if sender.title == "     Monochrome" {
             UserDefaults.standard.set("bw", forKey: "icon_mode")
             
@@ -359,6 +410,7 @@ class PreferencesViewController: NSViewController {
         }
     }
     
+    /// Register/unregister the SMAppService agent for Launch at Login, with a cautionary alert.
     @objc func loginItemChange(_ sender: NSButton) {
         let appService = SMAppService.agent(plistName: "com.ttinc.Air-Drop-Assistant.plist")
         
@@ -371,7 +423,7 @@ class PreferencesViewController: NSViewController {
                 NSLog("problem registering service")
             }
         } else {
-            
+            // Warn user that disabling may quit the app
             let alert = NSAlert()
             alert.messageText = "Alert"
             alert.informativeText = """
@@ -392,3 +444,4 @@ class PreferencesViewController: NSViewController {
     }
     
 }
+
