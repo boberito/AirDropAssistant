@@ -6,11 +6,23 @@
 
   <channel>
     <title>Air Drop Assistant</title>
-    <link>https://github.com/boberito/sc-menu-test</link>
+    <link>https://github.com/boberito/AirDropAssistant</link>
     <description>Software updates for Air Drop Assistant.</description>
     <language>en</language>
 
     <!-- Latest release -->
+    <item>
+        <title>1.6.1</title>
+        <description sparkle:format="plain-text"><![CDATA[
+            - Updated Sparkle Framework Package dependency to 2.10.0
+]]></description>
+        <pubDate>Fri, 09 Oct 2026 22:11:04 -0400</pubDate>
+        <sparkle:version>236</sparkle:version>
+        <sparkle:shortVersionString>1.6.1</sparkle:shortVersionString>
+        <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+        <enclosure url="https://github.com/boberito/AirDropAssistant/releases/download/1.6.1/AirDropAssistant.dmg" length="2539519" type="application/x-apple-diskimage" sparkle:edSignature="vvkKrVlKmet5LuP1rvvQK5Klh51Pkx6kIQJ87uY6Vx7gFcdNwS76w/MR6gZYIuInb2quTexsfSJiEMZ4f0QbBg=="/>
+    </item>
+    
     <item>
             <title>1.6</title>
              <description sparkle:format="plain-text"><![CDATA[
